@@ -10,6 +10,8 @@ class Users(Base):
     last_name = Column(String, nullable=False, unique=False)
     email = Column(String, nullable=False, unique=True)
     phone_number = Column(Integer, nullable=False, unique=True)
+    password = Column(String, unique=False, nullable=False)
+    landlord = Column(Boolean, default=False)
     created_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'), nullable=False)
 
 
@@ -20,6 +22,7 @@ class LandLord(Base):
     last_name = Column(String, nullable=False, unique=False)
     email = Column(String, nullable=False, unique=True)
     phone_number = Column(Integer, nullable=False, unique=True)
+    password = Column(String, unique=False, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'), nullable=False)
 
     property = relationship("Property", back_populates="landlord")
@@ -31,6 +34,7 @@ class Tenant(Base):
     last_name = Column(String, nullable=False, unique=False)
     email = Column(String, nullable=False, unique=True)
     phone_number = Column(Integer, nullable=False, unique=True)
+    password = Column(String, unique=False, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'), nullable=False)
 
     maintenance_requests = relationship("MaintenanceRequest", back_populates="tenant")
