@@ -52,6 +52,11 @@ class Property(Base):
     city = Column(String, nullable=False)
     state = Column(String, nullable=False)
     description = Column(Text)
+    file_1 = Column(String, nullable=False)
+    file_2 = Column(String, nullable=False)
+    file_3 = Column(String, nullable=False)
+    file_4 = Column(String, nullable=False)
+    file_5 = Column(String, nullable=False)
 
     landlord = relationship("LandLord", back_populates="property")
     bookings = relationship("Booking", back_populates="property")

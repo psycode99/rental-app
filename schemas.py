@@ -33,6 +33,11 @@ class Property(BaseModel):
     sqft: int
     description: str
     price: float
+    file_1: str
+    file_2: str
+    file_3: str
+    file_4: str
+    file_5: str
 
 
 class PropertyCreate(Property):
