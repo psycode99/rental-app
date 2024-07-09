@@ -32,7 +32,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
     return new_user
 
-@router.get('/', status_code=status.HTTP_200_OK, response_model=schemas.UserResp)
+@router.get('/{id}', status_code=status.HTTP_200_OK, response_model=schemas.UserResp)
 def get_user(id: int, db: Session = Depends(get_db)):
     query = db.query(models.Users).filter_by(id=id).first()
 

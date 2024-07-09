@@ -46,7 +46,7 @@ class Property(Base):
     landlord_id = Column(Integer, ForeignKey('landlords.id', ondelete="CASCADE"), nullable=False)
     address = Column(String, unique=True, nullable=False)
     bedrooms = Column(Integer, nullable=False)
-    bathrooms = Column(Integer, nullable=False)
+    bathrooms = Column(Float, nullable=False)
     sqft  = Column(Integer, nullable=True)
     price = Column(Float, nullable=False)
     city = Column(String, nullable=False)
