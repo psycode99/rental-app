@@ -71,10 +71,11 @@ class Booking(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     property_id = Column(Integer, ForeignKey('properties.id'), nullable=False)
     name = Column(String, nullable=False)
+    email = Column(String, nullable=True)
     phone_number = Column(Integer, nullable=False)
     viewing_date = Column(Date, nullable=False)
     viewing_time = Column(Time, nullable=False)
-    notes = Column(Text)
+    notes = Column(Text, nullable=True)
 
     property = relationship("Property", back_populates="bookings")
 

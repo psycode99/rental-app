@@ -64,12 +64,23 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
     return new_user
 
-@router.get('/{id}', status_code=status.HTTP_200_OK, response_model=schemas.UserResp)
-def get_user(id: int, db: Session = Depends(get_db)):
-    query = db.query(models.Users).filter_by(id=id).first()
+@router.get('/landlords/{id}', status_code=status.HTTP_200_OK, response_model=schemas.LandLordResp)
+def get_landlord(id: int, db: Session = Depends(get_db)):
+    query = db.query(models.LandLord).filter_by(id=id).first()
 
     if not query:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
-                            detail=f"User does not exist")
+                            detail=f"Landlord does not exist")
+    
+    return query
+
+
+@router.get('/tenants/{id}', status_code=status.HTTP_200_OK, response_model=schemas.TenantResp)
+def get_tenant(id: int, db: Session = Depends(get_db)):
+    query = db.query(models.Tenant).filter_by(id=id).first()
+
+    if not query:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+                            detail=f"Tenant does not exist")
     
     return query

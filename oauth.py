@@ -9,7 +9,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
 
 SECRET_KEY = "Q4epX5pDd_kjTbvRZ-8tLrXjFskv45pXyswhv48H8oM"
 ALGORITHM = "HS256"
-EXPIRATION_MINUTES = 10
+EXPIRATION_MINUTES = 30
 
 
 def create_access_token(data: dict):
@@ -25,10 +25,11 @@ def verify_access_token(token: str, credentials_exception):
     try:
         payload = jwt.decode(token, SECRET_KEY, ALGORITHM)
         id: str = payload.get('user_id')
+        landlord: bool = payload.get('landlord')
 
-        if id is None:
+        if id is None or landlord is None:
             raise credentials_exception
-        token_data = schemas.TokenData(id=id)
+        token_data = schemas.TokenData(id=id, landlord=landlord)
     except JWTError:
         raise credentials_exception
     
@@ -39,5 +40,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     credentials_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                           detail="Could not validate credentials")
     verified_token = verify_access_token(token, credentials_exception)
-    user = db.query(models.Users).filter_by(id=verified_token.id).first()
+    if verified_token.landlord == True:
+        user = db.query(models.LandLord).filter_by(id=verified_token.id).first()
+    else:
+       user = db.query(models.Tenant).filter_by(id=verified_token.id).first() 
     return user

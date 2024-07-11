@@ -11,8 +11,8 @@ router = APIRouter(prefix='/v1/properties', tags=['Properties'])
 
 @router.post('/', status_code=status.HTTP_201_CREATED, response_model=schemas.PropertyResp)
 def create_property(property: schemas.PropertyCreate, db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
-   print(current_user.landlord)
-   if current_user.landlord != True:
+   is_landlord = db.query(models.LandLord).filter_by(email=current_user.email).first()
+   if not is_landlord:
       raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                           detail="You are not authorized to create properties")
    new_property = models.Property(landlord_id=current_user.id, **property.model_dump())
@@ -51,11 +51,16 @@ def delete_property(id: int, db: Session = Depends(get_db), current_user: int = 
    if not property:
       raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                           detail=f"Property with id of {id} not found")
-      
+   
+   is_landlord = db.query(models.LandLord).filter_by(email=current_user.email).first()
+
+   if not is_landlord:
+      raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                          detail="You are not a landlord")
 
    if property.landlord_id != current_user.id:
       raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                          details="You are not authorized to delete this post")
+                          detail="You are not authorized to delete this post")
    
    db.delete(property)
    db.commit()
@@ -69,6 +74,13 @@ def update_property(id: int,  property: schemas.PropertyCreate, db: Session = De
    if not property_update:
       raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                           detail=f"Property with the id of {id} not found")
+   
+   
+   is_landlord = db.query(models.LandLord).filter_by(email=current_user.email).first()
+
+   if not is_landlord:
+      raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                          detail="You are not a landlord")
    
    if property_update.landlord_id != current_user.id:
       raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
