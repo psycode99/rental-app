@@ -9,7 +9,7 @@ class UserCreate(BaseModel):
     phone_number: int
     email: EmailStr
     password: str
-    landlord: bool = Field(False)
+    landlord: bool = False
 
 
 class UserResp(BaseModel):
@@ -33,11 +33,11 @@ class Property(BaseModel):
     sqft: int
     description: str
     price: float
-    file_1: str
-    file_2: str
-    file_3: str
-    file_4: str
-    file_5: str
+    file_1: Optional[str] = None
+    file_2: Optional[str] = None
+    file_3: Optional[str] = None
+    # file_4: str
+    # file_5: str
 
 
 class PropertyCreate(Property):

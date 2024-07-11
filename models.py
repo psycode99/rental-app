@@ -22,6 +22,7 @@ class LandLord(Base):
     last_name = Column(String, nullable=False, unique=False)
     email = Column(String, nullable=False, unique=True)
     phone_number = Column(Integer, nullable=False, unique=True)
+    landlord = Column(Boolean, default=True)
     password = Column(String, unique=False, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'), nullable=False)
 
@@ -34,6 +35,7 @@ class Tenant(Base):
     last_name = Column(String, nullable=False, unique=False)
     email = Column(String, nullable=False, unique=True)
     phone_number = Column(Integer, nullable=False, unique=True)
+    landlord = Column(Boolean, default=False)
     password = Column(String, unique=False, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'), nullable=False)
 
@@ -44,7 +46,7 @@ class Property(Base):
     __tablename__ = "properties"
     id = Column(Integer, primary_key=True, nullable=False)
     landlord_id = Column(Integer, ForeignKey('landlords.id', ondelete="CASCADE"), nullable=False)
-    address = Column(String, unique=True, nullable=False)
+    address = Column(String, unique=False, nullable=False)
     bedrooms = Column(Integer, nullable=False)
     bathrooms = Column(Float, nullable=False)
     sqft  = Column(Integer, nullable=True)
@@ -52,11 +54,12 @@ class Property(Base):
     city = Column(String, nullable=False)
     state = Column(String, nullable=False)
     description = Column(Text)
-    file_1 = Column(String, nullable=False)
-    file_2 = Column(String, nullable=False)
-    file_3 = Column(String, nullable=False)
-    file_4 = Column(String, nullable=False)
-    file_5 = Column(String, nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'), nullable=False)
+    file_1 = Column(String, nullable=True)
+    file_2 = Column(String, nullable=True)
+    file_3 = Column(String, nullable=True)
+    # file_4 = Column(String, nullable=False)
+    # file_5 = Column(String, nullable=False)
 
     landlord = relationship("LandLord", back_populates="property")
     bookings = relationship("Booking", back_populates="property")
