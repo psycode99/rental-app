@@ -90,7 +90,7 @@ class MaintenanceRequest(Base):
     description = Column(Text, nullable=False)
     status = Column(String(50), nullable=False, default='Pending')  # E.g., Pending, In Progress, Completed
     landlord_deleted = Column(Boolean, default=False)
-    tenant_deletef = Column(Boolean, default=False)
+    tenant_deleted = Column(Boolean, default=False)
 
     property = relationship("Property", back_populates="maintenance_requests")
     tenant = relationship("Tenant", back_populates="maintenance_requests")

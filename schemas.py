@@ -3,8 +3,6 @@ from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from typing import Optional, List
 from datetime import date, time
 
-from routers import maintenance_requests
-
 class Property(BaseModel):
     address: str
     city: str
@@ -93,7 +91,7 @@ class MaintenanceRequest(BaseModel):
     tenant_id: int
     request_date: date
     description: str
-    status: str
+    status: Optional[str] = 'Pending'
     landlord_deleted: Optional[bool] = False
     tenant_deleted: Optional[bool] = False
 

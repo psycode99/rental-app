@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, Response, status, HTTPException
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 from oauth import get_current_user
 import schemas, models, database
 from typing import List
 
 
-router = APIRouter(prefix='/v1/maintenance_req', tags=["Maintenance Requests"])
+router = APIRouter(prefix='/v1/maintenance_reqs', tags=["Maintenance Requests"])
 
 @router.post('/{property_id}', status_code=status.HTTP_201_CREATED, response_model=schemas.MaintenanceRequestResp)
 def create_maintenance_request(property_id: int, maintenance_request: schemas.MaintenanceRequestCreate, db:  Session = Depends(database.get_db), current_user: int = Depends(get_current_user)):
@@ -93,7 +94,7 @@ def get_maintenance_req(property_id: int, MR_id: int,  db: Session = Depends(dat
     maintenance_req_check = db.query(models.MaintenanceRequest).filter_by(id=MR_id).first()
     if not maintenance_req_check:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Maintenace Request not found")
+                            detail=f"Maintenance Request not found")
     
     maintenance_req = db.query(models.MaintenanceRequest).filter_by(id=MR_id, property_id=property_id).first()
 
@@ -102,8 +103,56 @@ def get_maintenance_req(property_id: int, MR_id: int,  db: Session = Depends(dat
 
 
 @router.put('/{property_id}/{MR_id}', status_code=status.HTTP_200_OK, response_model=schemas.MaintenanceRequestResp)
-def update_maintenance_req(property_id: int, MR_id: int, db: Session = Depends(database.get_db), current_user: int = Depends(get_current_user)):
-    pass
+def update_maintenance_req(property_id: int, MR_id: int, MR: schemas.MaintenanceRequestCreate, db: Session = Depends(database.get_db), current_user: int = Depends(get_current_user)):
+    property_check = db.query(models.Property).filter_by(id=property_id).first()
+    if not property_check:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Property with id of {property_id} not found")
+    
+    maintenance_req_check = db.query(models.MaintenanceRequest).filter_by(id=MR_id, landlord_deleted=False).first()
+    if not maintenance_req_check:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Maintenance Request not found")
+    
+    stmt = (
+        update(models.MaintenanceRequest).
+        where(models.MaintenanceRequest.id == MR_id).
+        values(**MR.model_dump())
+    )
+
+    db.execute(stmt)
+    db.commit()
+    return maintenance_req_check
+
+
+@router.delete('/{property_id}/{MR_id}', status_code=status.HTTP_204_NO_CONTENT)
+def delete_maintenance_req(property_id: int, MR_id: int, db: Session = Depends(database.get_db), current_user: int = Depends(get_current_user)):
+    property_check = db.query(models.Property).filter_by(id=property_id).first()
+    if not property_check:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Property with id {property_id} not found"
+        )
+    
+    maintenance_req_check = db.query(models.MaintenanceRequest).filter_by(id=MR_id, landlord_deleted=False).first()
+    if not maintenance_req_check:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Maintenance Request not found"
+        )
+    
+    if current_user.landlord:
+        maintenance_req_check.landlord_deleted = True
+    else:
+        maintenance_req_check.tenant_deleted = True
+
+    db.commit()
+
+    if maintenance_req_check.landlord_deleted and maintenance_req_check.tenant_deleted:
+        db.delete(maintenance_req_check)
+        db.commit()
+        
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 
