@@ -89,6 +89,14 @@ class MaintenanceRequest(Base):
     request_date = Column(Date, nullable=False)
     description = Column(Text, nullable=False)
     status = Column(String(50), nullable=False, default='Pending')  # E.g., Pending, In Progress, Completed
+    landlord_deleted = Column(Boolean, default=False)
+    tenant_deletef = Column(Boolean, default=False)
 
     property = relationship("Property", back_populates="maintenance_requests")
     tenant = relationship("Tenant", back_populates="maintenance_requests")
+
+
+class PropertyTenant(Base):
+    __tablename__ = "propertyTenants"
+    tenant_id = Column(Integer, ForeignKey('tenants.id', ondelete='CASCADE'), primary_key=True, nullable=False)
+    property_id = Column(Integer, ForeignKey('properties.id', ondelete='CASCADE'), primary_key=True, nullable=False)

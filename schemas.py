@@ -3,6 +3,8 @@ from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from typing import Optional, List
 from datetime import date, time
 
+from routers import maintenance_requests
+
 class Property(BaseModel):
     address: str
     city: str
@@ -49,6 +51,7 @@ class PropertyResp(Property):
     created_at: datetime.datetime
     # landlord: 'LandLordResp'
     bookings: List['BookingsResp'] = []
+    maintenance_requests: List['MaintenanceRequestResp'] = []
 
     class Config:
         from_attributes = True
@@ -83,3 +86,22 @@ class TokenData(BaseModel):
     model_config = ConfigDict(coerce_numbers_to_str=True)
     id: Optional[str] = None
     landlord: bool
+
+
+class MaintenanceRequest(BaseModel):
+    property_id: int
+    tenant_id: int
+    request_date: date
+    description: str
+    status: str
+    landlord_deleted: Optional[bool] = False
+    tenant_deleted: Optional[bool] = False
+
+
+class MaintenanceRequestResp(MaintenanceRequest):
+    id: int
+    tenant: TenantResp
+
+
+class MaintenanceRequestCreate(MaintenanceRequest):
+    pass
