@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from database import engine
 import models
-from routers import users, property, auth, uploads, bookings, maintenance_requests
+from routers import users, property, auth, uploads, bookings, maintenance_requests, tenant_applications, payments
 
 
 models.Base.metadata.create_all(bind=engine)
@@ -21,3 +21,5 @@ app.include_router(auth.router)
 app.include_router(uploads.router)
 app.include_router(bookings.router)
 app.include_router(maintenance_requests.router)
+app.include_router(tenant_applications.router)
+app.include_router(payments.router)

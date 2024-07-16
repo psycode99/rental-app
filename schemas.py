@@ -1,7 +1,7 @@
 import datetime
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
-from typing import Optional, List
-from datetime import date, time
+from pydantic import BaseModel, EmailStr, Field, ConfigDict, constr, conint, field_validator, model_validator, root_validator
+from typing import Optional, List, Literal, Annotated
+from datetime import date, time, datetime, timedelta
 
 class Property(BaseModel):
     address: str
@@ -12,6 +12,8 @@ class Property(BaseModel):
     sqft: int
     description: str
     price: float
+    landlord_id: int
+    status: Literal["available", "occupied", "under maintenance"] = "available"
     file_1: Optional[str] = None
     file_2: Optional[str] = None
     file_3: Optional[str] = None
@@ -24,7 +26,7 @@ class PropertyCreate(Property):
 class UserCreate(BaseModel):
     first_name: str
     last_name: str
-    phone_number: int
+    phone_number: str
     email: EmailStr
     password: str
     landlord: bool = False
@@ -34,22 +36,26 @@ class UserResp(BaseModel):
     first_name: str
     last_name: str
     email: EmailStr
-    created_at: datetime.datetime
+    created_at: datetime
     landlord: bool
 
     class Config:
         from_attributes = True
 
 class TenantResp(UserResp):
+    payments: List['PaymentResp'] = []
     pass
 
 class PropertyResp(Property):
     id: int
     landlord_id: int
-    created_at: datetime.datetime
+    created_at: datetime
     # landlord: 'LandLordResp'
     bookings: List['BookingsResp'] = []
     maintenance_requests: List['MaintenanceRequestResp'] = []
+    tenants : List[TenantResp] = []
+    tenant_application : List['TenantApplicationResp'] = []
+    payments: List['PaymentResp'] = []
 
     class Config:
         from_attributes = True
@@ -103,3 +109,108 @@ class MaintenanceRequestResp(MaintenanceRequest):
 
 class MaintenanceRequestCreate(MaintenanceRequest):
     pass
+
+class TenantApplication(BaseModel):
+    tenant_id: int
+    property_id: int
+    first_name: Annotated[str, 'First name of the tenant']
+    last_name: Annotated[str, 'Last name of the tenant']
+    date_of_birth: Annotated[date, 'Date of birth of the tenant']
+    national_identity_number: Annotated[str, 'Social security number of the tenant', 
+                                      lambda s: len(str(s)) == 11 and str(s).isdigit()]
+    
+    email_address: Annotated[EmailStr, 'Email address of the tenant']
+    phone_number: Annotated[str, 'Phone number of the tenant']
+    current_address: Annotated[str, 'Current address of the tenant']
+    previous_address: Optional[Annotated[str, 'Previous address of the tenant']]
+    
+    employer_name: Annotated[str, 'Name of the tenant\'s employer']
+    job_title: Annotated[str, 'Job title of the tenant']
+    employment_duration: Annotated[int, 'Duration of employment in months', 
+                                          conint(gt=0)]
+    monthly_income: Annotated[float, 'Monthly income of the tenant']
+    
+    previous_landlord_name: Optional[Annotated[str, 'Name of the previous landlord']]
+    previous_landlord_contact: Optional[Annotated[str, 'Contact information of the previous landlord']]
+    reason_for_moving: Optional[Annotated[str, 'Reason for moving']]
+    
+    personal_reference_name: Optional[Annotated[str, 'Name of personal reference']]
+    personal_reference_contact: Optional[Annotated[str, 'Contact information of personal reference']]
+    professional_reference_name: Optional[Annotated[str, 'Name of professional reference']]
+    professional_reference_contact: Optional[Annotated[str, 'Contact information of professional reference']]
+    
+    application_date: Annotated[date, 'Date of application']
+    desired_move_in_date: Annotated[date, 'Desired move-in date']
+    application_status: Annotated[Literal['pending', 'approved', 'rejected'], 'Application status'] = 'pending'
+    
+    # credit_score: Optional[Annotated[int, 'Credit score of the tenant', conint(ge=300, le=850)]]
+    criminal_record: Optional[Annotated[str, 'Details of any criminal record']]
+    # background_check_status: Optional[Annotated[Literal['completed', 'pending'], 'Background check status']]
+    
+    pets: Optional[Annotated[str, 'Pets owned by the tenant']]
+    number_of_occupants: Annotated[int, 'Number of occupants', conint(gt=0)]
+    special_requests: Optional[Annotated[str, 'Any special requests or notes']]
+    file_name: Optional[str] = None
+
+
+class TenantApplicationCreate(TenantApplication):
+    pass
+
+
+class TenantApplicationResp(TenantApplication):
+    id: int
+
+    
+    class Config:
+        from_attributes = True
+
+class TenantApplicationStatus(BaseModel):
+    tenant_id: int
+    application_status: Annotated[Literal['pending', 'approved', 'rejected'], 'Application status']
+
+
+class Payment(BaseModel):
+    id: Optional[int] = None
+    tenant_id: Annotated[int, Field(ge=1)]
+    property_id: Annotated[int, Field(ge=1)]
+    amount: Annotated[float, Field(ge=0)]
+    duration_months: Annotated[int, Field(ge=1)]
+    due_date: date
+    payment_date: Optional[datetime] = None
+    # status: Annotated[PaymentStatus, Field(default=PaymentStatus.pending)]
+    
+    class Config:
+        from_attributes = True
+
+    @field_validator('duration_months')
+    @classmethod
+    def validate_duration(cls, v):
+        if v < 1:
+            raise ValueError('duration_months must be at least 1')
+        return v
+    
+
+class PaymentResp(Payment):
+     class Config:
+        from_attributes = True
+    
+class PaymentCreate(BaseModel):
+    tenant_id: Annotated[int, Field(ge=1)]
+    property_id: Annotated[int, Field(ge=1)]
+    amount: Annotated[float, Field(ge=0)]
+    duration_months: Annotated[int, Field(ge=1)]
+
+    @field_validator('duration_months')
+    @classmethod
+    def validate_duration(cls, v):
+        if v < 1:
+            raise ValueError('duration_months must be at least 1')
+        return v
+
+    @model_validator(mode='before')
+    @classmethod
+    def compute_due_date(cls, values):
+        duration_months = values.get('duration_months')
+        if duration_months is not None:
+            values['due_date'] = datetime.now().date() + timedelta(days=duration_months * 30)
+        return values

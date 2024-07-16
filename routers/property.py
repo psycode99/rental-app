@@ -15,7 +15,11 @@ def create_property(property: schemas.PropertyCreate, db: Session = Depends(get_
    if not is_landlord:
       raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                           detail="You are not authorized to create properties")
-   new_property = models.Property(landlord_id=current_user.id, **property.model_dump())
+   
+   if is_landlord.id  != property.landlord_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Landlord id match failure")
+   new_property = models.Property(**property.model_dump())
    db.add(new_property)
    db.commit()
    db.refresh(new_property)

@@ -46,6 +46,8 @@ def get_maintenance_reqs(property_id: int, db: Session = Depends(database.get_db
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Property with id of {property_id} not found")
     maintenance_reqs = db.query(models.MaintenanceRequest).filter_by(property_id=property_id).all()
+    if not maintenance_reqs:
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
 
     return maintenance_reqs
     
@@ -90,13 +92,12 @@ def get_maintenance_req(property_id: int, MR_id: int,  db: Session = Depends(dat
     if not property_check:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Property with id of {property_id} not found")
-    
-    maintenance_req_check = db.query(models.MaintenanceRequest).filter_by(id=MR_id).first()
-    if not maintenance_req_check:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Maintenance Request not found")
+ 
     
     maintenance_req = db.query(models.MaintenanceRequest).filter_by(id=MR_id, property_id=property_id).first()
+    if not maintenance_req:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Maintenance Request not found")
 
     return maintenance_req
     
