@@ -13,7 +13,7 @@ def create_application(property_id: int, application: schemas.TenantApplicationC
     if not property_check:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Property with id of {property_id} not found")
-    user_check = db.query(models.Tenant).filter_by(email=current_user.email).first()
+    user_check = db.query(models.Tenant).filter_by(email=current_user.email, id=application.tenant_id).first()
     if not user_check:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="You are not registered as a tenant")
@@ -57,8 +57,8 @@ def get_application(property_id: int, app_id: int, db:  Session = Depends(databa
 
 
 @router.put('/{property_id}/{app_id}', status_code=status.HTTP_200_OK, response_model=schemas.TenantApplicationResp)
-def update_application_status(property_id: int, app_id: int, status: schemas.TenantApplicationStatus, db: Session = Depends(database.get_db), current_user: int = Depends(get_current_user)):
-    application_check = db.query(models.TenantApplication).filter_by(id=app_id, property_id=property_id).first()
+def update_application_status(property_id: int, app_id: int, app_status: schemas.TenantApplicationStatus, db: Session = Depends(database.get_db), current_user: int = Depends(get_current_user)):
+    application_check = db.query(models.TenantApplication).filter_by(id=app_id, property_id=property_id, tenant_id=app_status.tenant_id).first()
     if not application_check:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail="Tenant  Application not found")
@@ -73,36 +73,51 @@ def update_application_status(property_id: int, app_id: int, status: schemas.Ten
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="You are not authorized")
     
-    application_check.application_status = status.application_status
+    application_check.application_status = app_status.application_status
     db.commit()
 
-    if status.application_status == 'approved':
-        new_entry = models.PropertyTenant(tenant_id=status.tenant_id,
-                                          property_id=property_id)
+    if app_status.application_status == 'approved':
+        # application_check.application_status = "approved"
+        # db.commit()
+
+        # prop_tenant_query = db.query(models.PropertyTenant).filter_by(
+        #                                     tenant_id=app_status.tenant_id,
+        #                                     property_id=property_id,
+        #                                     landlord_removed=True).first()
+        # if prop_tenant_query:
+        #     prop_tenant_query.landlord_removed = False
+        #     db.commit()
+        # else:
+        new_entry = models.PropertyTenant(tenant_id=app_status.tenant_id,
+                                        property_id=property_id)
         db.add(new_entry)
+        db.commit()
+
+    elif app_status.application_status == 'rejected':
+        application_check.application_status = "rejected"
         db.commit()
 
     return application_check
 
 
-@router.delete('/{property_id}/{app_id}', status_code=status.HTTP_204_NO_CONTENT)
-def delete_application(property_id: int, app_id: int, db:  Session = Depends(database.get_db), current_user: int = Depends(get_current_user)):
-    application_check = db.query(models.TenantApplication).filter_by(id=app_id, property_id=property_id).first()
-    if not application_check:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
-                            detail="Tenant  Application not found")
+# @router.delete('/{property_id}/{app_id}', status_code=status.HTTP_204_NO_CONTENT)
+# def delete_application(property_id: int, app_id: int, db:  Session = Depends(database.get_db), current_user: int = Depends(get_current_user)):
+#     application_check = db.query(models.TenantApplication).filter_by(id=app_id, property_id=property_id).first()
+#     if not application_check:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+#                             detail="Tenant  Application not found")
     
-    is_landlord = db.query(models.LandLord).filter_by(email=current_user.email).first()
-    if not is_landlord:
-      raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                          detail="You are not a landlord")
+#     is_landlord = db.query(models.LandLord).filter_by(email=current_user.email).first()
+#     if not is_landlord:
+#       raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+#                           detail="You are not a landlord")
     
     
-    if current_user.id != application_check.property.landlord_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                            detail="You are not authorized")
+#     if current_user.id != application_check.property.landlord_id:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+#                             detail="You are not authorized")
     
-    db.delete(application_check)
-    db.commit()
+#     db.delete(application_check)
+#     db.commit()
 
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+#     return Response(status_code=status.HTTP_204_NO_CONTENT)

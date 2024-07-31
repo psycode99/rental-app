@@ -11,7 +11,7 @@ router = APIRouter(prefix='/v1/properties', tags=['Properties'])
 
 @router.post('/', status_code=status.HTTP_201_CREATED, response_model=schemas.PropertyResp)
 def create_property(property: schemas.PropertyCreate, db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
-   is_landlord = db.query(models.LandLord).filter_by(email=current_user.email).first()
+   is_landlord = db.query(models.LandLord).filter_by(email=current_user.email, id=property.landlord_id).first()
    if not is_landlord:
       raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                           detail="You are not authorized to create properties")
@@ -80,7 +80,7 @@ def update_property(id: int,  property: schemas.PropertyCreate, db: Session = De
                           detail=f"Property with the id of {id} not found")
    
    
-   is_landlord = db.query(models.LandLord).filter_by(email=current_user.email).first()
+   is_landlord = db.query(models.LandLord).filter_by(email=current_user.email, id=property.landlord_id).first()
 
    if not is_landlord:
       raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,

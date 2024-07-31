@@ -2,6 +2,7 @@ from database import Base
 from sqlalchemy.orm import relationship
 from sqlalchemy import TIMESTAMP, ForeignKey, text, Boolean,  Integer, Column, String, Date, Time, Float, Text
 from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 
 
 class Users(Base):
@@ -14,6 +15,7 @@ class Users(Base):
 
     password = Column(String, unique=False, nullable=False)
     landlord = Column(Boolean, default=False)
+    profile_pic = Column(String, nullable=True)
     created_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'), nullable=False)
 
 
@@ -27,6 +29,7 @@ class LandLord(Base):
 
     landlord = Column(Boolean, default=True)
     password = Column(String, unique=False, nullable=False)
+    profile_pic = Column(String, nullable=True)
     created_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'), nullable=False)
 
     property = relationship("Property", back_populates="landlord")
@@ -41,6 +44,7 @@ class Tenant(Base):
 
     landlord = Column(Boolean, default=False)
     password = Column(String, unique=False, nullable=False)
+    profile_pic = Column(String, nullable=True)
     created_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'), nullable=False)
 
     payments = relationship('Payment', back_populates='tenant')
@@ -115,7 +119,7 @@ class PropertyTenant(Base):
     __tablename__ = 'property_tenants'
     tenant_id = Column(Integer, ForeignKey('tenants.id', ondelete='CASCADE'), primary_key=True, nullable=False)
     property_id = Column(Integer, ForeignKey('properties.id', ondelete='CASCADE'), primary_key=True, nullable=False)
-
+    landlord_removed = Column(Boolean, default=False)
     # tenant = relationship("Tenant", back_populates="properties")
     # property = relationship("Property", back_populates="tenant")
 
@@ -174,7 +178,7 @@ class Payment(Base):
     __tablename__ = 'payments'
     id = Column(Integer, primary_key=True)
     tenant_id = Column(Integer, ForeignKey('tenants.id'), nullable=False)
-    property_id = Column(Integer, ForeignKey('properties.id'), nullable=False)
+    property_id = Column(Integer, ForeignKey('properties.id', ondelete="CASCADE"), nullable=False)
     amount = Column(Float, nullable=False)
 
     duration_months = Column(Integer, nullable=False)
@@ -190,4 +194,4 @@ class Payment(Base):
         self.property_id = property_id
         self.amount = amount
         self.duration_months = duration_months
-        self.due_date = datetime.now().date() + timedelta(days=duration_months*30)  # Approximate months by 30 days
+        self.due_date = (datetime.now() + relativedelta(months=duration_months)).date() # Approximate months by 30 days

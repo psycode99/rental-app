@@ -10,17 +10,21 @@ import os
 from pathlib import Path
 import uuid
 import time
+from typing import Optional
 
 router = APIRouter(prefix='/v1/uploads', tags=['Uploads'])
 
 
 UPLOAD_FOLDER = 'static/property_uploads'
 TENANT_APPLICATIONS = 'static/tenant_applications'
+PROFILE_PIC_UPLOAD_DIR = Path("static/profile_pics")
+
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 TENANT_APPLICATIONS_ALLOWED_EXT = {'pdf'}
 
 Path(UPLOAD_FOLDER).mkdir(parents=True, exist_ok=True)
 Path(TENANT_APPLICATIONS).mkdir(parents=True, exist_ok=True)
+PROFILE_PIC_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 def allowed_file(filename: str, allowed) -> bool:
     return '.' in filename and \
@@ -33,13 +37,29 @@ def get_unique_filename(filename: str) -> str:
     unique_filename = f"{unique_id}_{timestamp}.{ext}"
     return unique_filename
 
-@router.post("/upload_img")
-async def upload_file_img(file: UploadFile = File(...)):
+
+
+# @router.post("/upload_img")
+# async def upload_file_img(file: UploadFile = File(...)):
+#     if not allowed_file(file.filename, ALLOWED_EXTENSIONS):
+#         raise HTTPException(status_code=400, detail="File type not allowed")
+
+#     unique_filename = get_unique_filename(file.filename)
+#     file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+    
+#     with open(file_path, "wb") as f:
+#         f.write(await file.read())
+
+#     return JSONResponse(content={"message": "File successfully uploaded", "filename": unique_filename})
+
+
+@router.post("/upload_profile_pic")
+async def upload_profile_pic(file: UploadFile = File(...)):
     if not allowed_file(file.filename, ALLOWED_EXTENSIONS):
         raise HTTPException(status_code=400, detail="File type not allowed")
 
     unique_filename = get_unique_filename(file.filename)
-    file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+    file_path = os.path.join(PROFILE_PIC_UPLOAD_DIR, unique_filename)
     
     with open(file_path, "wb") as f:
         f.write(await file.read())
@@ -50,6 +70,9 @@ async def upload_file_img(file: UploadFile = File(...)):
 
 @router.post("/upload_imgs")
 async def upload_files_imgs(files: List[UploadFile] = File(...)):
+    if len(files) > 3:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="can not upload more than 3 files")
     filenames = []
     
     for file in files:
@@ -68,23 +91,26 @@ async def upload_files_imgs(files: List[UploadFile] = File(...)):
 
 
 
-@router.post("/upload_application")
-async def upload_file_doc(file: UploadFile = File(...)):
-    if not allowed_file(file.filename, TENANT_APPLICATIONS_ALLOWED_EXT):
-        raise HTTPException(status_code=400, detail="File type not allowed")
+# @router.post("/upload_application")
+# async def upload_file_doc(file: UploadFile = File(...)):
+#     if not allowed_file(file.filename, TENANT_APPLICATIONS_ALLOWED_EXT):
+#         raise HTTPException(status_code=400, detail="File type not allowed")
 
-    unique_filename = get_unique_filename(file.filename)
-    file_path = os.path.join(TENANT_APPLICATIONS, unique_filename)
+#     unique_filename = get_unique_filename(file.filename)
+#     file_path = os.path.join(TENANT_APPLICATIONS, unique_filename)
     
-    with open(file_path, "wb") as f:
-        f.write(await file.read())
+#     with open(file_path, "wb") as f:
+#         f.write(await file.read())
 
-    return JSONResponse(content={"message": "File successfully uploaded", "filename": unique_filename})
+#     return JSONResponse(content={"message": "File successfully uploaded", "filename": unique_filename})
 
 
 
 @router.post("/upload_applications")
 async def upload_files(files: List[UploadFile] = File(...)):
+    if len(files) > 3:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="can not upload more than 3 files")
     filenames = []
     
     for file in files:

@@ -16,6 +16,11 @@ def create_booking(property_id: int, booking: schemas.BookingsCreate,  db: Sessi
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Property id match failure")
     
+    booking_check = db.query(models.Booking).filter_by(property_id=property_id, phone_number=booking.phone_number).first()
+    if booking_check:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="You've already made a booking for this property")
+    
     new_booking = models.Booking(**booking.model_dump())
     db.add(new_booking)
     db.commit()

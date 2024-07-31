@@ -2,6 +2,7 @@ import datetime
 from pydantic import BaseModel, EmailStr, Field, ConfigDict, constr, conint, field_validator, model_validator, root_validator
 from typing import Optional, List, Literal, Annotated
 from datetime import date, time, datetime, timedelta
+from dateutil.relativedelta import relativedelta
 
 class Property(BaseModel):
     address: str
@@ -30,6 +31,8 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     landlord: bool = False
+    profile_pic: Optional[str] = None
+    
 
 class UserResp(BaseModel):
     id: int
@@ -38,11 +41,13 @@ class UserResp(BaseModel):
     email: EmailStr
     created_at: datetime
     landlord: bool
+    profile_pic: Optional[str] = None
 
     class Config:
         from_attributes = True
 
 class TenantResp(UserResp):
+    tenant_application: List['TenantApplicationResp'] = []
     payments: List['PaymentResp'] = []
     pass
 
@@ -66,7 +71,7 @@ class LandLordResp(UserResp):
 class Bookings(BaseModel):
     property_id: int
     name: str
-    phone_number: int
+    phone_number: str
     email: Optional[str] = None
     viewing_date: date
     viewing_time: time
@@ -212,5 +217,10 @@ class PaymentCreate(BaseModel):
     def compute_due_date(cls, values):
         duration_months = values.get('duration_months')
         if duration_months is not None:
-            values['due_date'] = datetime.now().date() + timedelta(days=duration_months * 30)
+            values['due_date'] = datetime.now().date() + relativedelta(months=duration_months)
         return values
+    
+
+class PropertyTenantResp(BaseModel):
+    property_id: int
+    tenant_id: int

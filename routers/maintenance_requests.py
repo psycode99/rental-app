@@ -15,7 +15,7 @@ def create_maintenance_request(property_id: int, maintenance_request: schemas.Ma
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"property with the id of {property_id} not found")
     
-    user_check =  db.query(models.Tenant).filter_by(email=current_user.email).first()
+    user_check =  db.query(models.Tenant).filter_by(email=current_user.email, id=maintenance_request.tenant_id).first()
     if not user_check:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="User is not a Tenant"
@@ -52,7 +52,7 @@ def get_maintenance_reqs(property_id: int, db: Session = Depends(database.get_db
     return maintenance_reqs
     
     # if current_user.landlord:
-    #     # just being extra careful.. i'm not dumb i clearly see the user is a lawyer
+    #     # just being extra careful.. i'm not dumb i clearly see the user is a landlord
     #     landlord_check = db.query(models.LandLord).filter_by(email=current_user.email).first()
     #     if not landlord_check:
     #         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
@@ -110,7 +110,7 @@ def update_maintenance_req(property_id: int, MR_id: int, MR: schemas.Maintenance
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Property with id of {property_id} not found")
     
-    maintenance_req_check = db.query(models.MaintenanceRequest).filter_by(id=MR_id, landlord_deleted=False).first()
+    maintenance_req_check = db.query(models.MaintenanceRequest).filter_by(id=MR_id, tenant_id=MR.tenant_id, property_id=MR.property_id, landlord_deleted=False).first()
     if not maintenance_req_check:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Maintenance Request not found")
@@ -126,34 +126,34 @@ def update_maintenance_req(property_id: int, MR_id: int, MR: schemas.Maintenance
     return maintenance_req_check
 
 
-@router.delete('/{property_id}/{MR_id}', status_code=status.HTTP_204_NO_CONTENT)
-def delete_maintenance_req(property_id: int, MR_id: int, db: Session = Depends(database.get_db), current_user: int = Depends(get_current_user)):
-    property_check = db.query(models.Property).filter_by(id=property_id).first()
-    if not property_check:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Property with id {property_id} not found"
-        )
+# @router.delete('/{property_id}/{MR_id}', status_code=status.HTTP_204_NO_CONTENT)
+# def delete_maintenance_req(property_id: int, MR_id: int, db: Session = Depends(database.get_db), current_user: int = Depends(get_current_user)):
+#     property_check = db.query(models.Property).filter_by(id=property_id).first()
+#     if not property_check:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND,
+#             detail=f"Property with id {property_id} not found"
+#         )
     
-    maintenance_req_check = db.query(models.MaintenanceRequest).filter_by(id=MR_id, landlord_deleted=False).first()
-    if not maintenance_req_check:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Maintenance Request not found"
-        )
+#     maintenance_req_check = db.query(models.MaintenanceRequest).filter_by(id=MR_id, landlord_deleted=False).first()
+#     if not maintenance_req_check:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND,
+#             detail=f"Maintenance Request not found"
+#         )
     
-    if current_user.landlord:
-        maintenance_req_check.landlord_deleted = True
-    else:
-        maintenance_req_check.tenant_deleted = True
+#     if current_user.landlord:
+#         maintenance_req_check.landlord_deleted = True
+#     else:
+#         maintenance_req_check.tenant_deleted = True
 
-    db.commit()
+#     db.commit()
 
-    if maintenance_req_check.landlord_deleted and maintenance_req_check.tenant_deleted:
-        db.delete(maintenance_req_check)
-        db.commit()
+#     if maintenance_req_check.landlord_deleted and maintenance_req_check.tenant_deleted:
+#         db.delete(maintenance_req_check)
+#         db.commit()
         
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+#     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 
