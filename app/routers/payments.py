@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from oauth import get_current_user
-import schemas, models, database
+from ..oauth import get_current_user
+from .. import schemas, models, database
 from typing import List
 
 router = APIRouter(prefix='/v1/payments', tags=['Payments'])

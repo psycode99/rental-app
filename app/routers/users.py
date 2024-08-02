@@ -1,8 +1,8 @@
 from fastapi import APIRouter, FastAPI, Response, status, Depends, HTTPException
 from sqlalchemy import update
-from oauth import get_current_user
-import schemas, utils, models
-from database import get_db
+from ..oauth import get_current_user
+from .. import schemas, utils, models
+from ..database import get_db
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -104,7 +104,7 @@ def get_tenants(property_id: int, db: Session = Depends(get_db)):
     return tenants
 
 
-@router.put('/{property_id}/{tenant_id}', status_code=status.HTTP_204_NO_CONTENT)
+@router.delete('/{property_id}/{tenant_id}', status_code=status.HTTP_204_NO_CONTENT)
 def remove_tenant(property_id: int, tenant_id: int, db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
     landlord_check = db.query(models.LandLord).filter_by(id=current_user.id, email=current_user.email).first()
     if not landlord_check:

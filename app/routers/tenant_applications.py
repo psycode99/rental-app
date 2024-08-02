@@ -1,8 +1,8 @@
 from typing import List
 from fastapi import APIRouter,  HTTPException, Depends, Response, status
 from sqlalchemy.orm import Session
-from oauth import get_current_user
-import schemas, models, database
+from ..oauth import get_current_user
+from .. import schemas, models, database
 
 
 router = APIRouter(prefix='/v1/applications', tags=['Tenant Applications'])

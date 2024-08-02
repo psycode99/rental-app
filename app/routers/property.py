@@ -1,9 +1,9 @@
 from typing import List
 from fastapi import APIRouter, status, Depends, HTTPException, Response
 from sqlalchemy import update
-from database import get_db
-from oauth import get_current_user
-import models, schemas
+from ..database import get_db
+from ..oauth import get_current_user
+from .. import models, schemas
 from sqlalchemy.orm import Session
 import os
 

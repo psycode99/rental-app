@@ -6,8 +6,6 @@ from typing import Optional, List
 import uuid
 import time
 
-PROFILE_PIC_UPLOAD_DIR = Path("static/profile_pics")
-PROFILE_PIC_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 def hash_pwd(pwd):
     return bcrypt.hash(pwd)

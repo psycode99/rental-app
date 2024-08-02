@@ -2,9 +2,9 @@ from typing import List
 from fastapi import APIRouter, UploadFile, status, Depends, HTTPException, File
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
-from database import get_db
-from oauth import get_current_user
-import models, schemas
+from ..database import get_db
+from ..oauth import get_current_user
+from .. import models, schemas
 from sqlalchemy.orm import Session
 import os
 from pathlib import Path
@@ -15,8 +15,8 @@ from typing import Optional
 router = APIRouter(prefix='/v1/uploads', tags=['Uploads'])
 
 
-UPLOAD_FOLDER = 'static/property_uploads'
-TENANT_APPLICATIONS = 'static/tenant_applications'
+UPLOAD_FOLDER = Path('static/property_uploads')
+TENANT_APPLICATIONS = Path('static/tenant_applications')
 PROFILE_PIC_UPLOAD_DIR = Path("static/profile_pics")
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}

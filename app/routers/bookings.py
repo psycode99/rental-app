@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from oauth import get_current_user
-import database, models, schemas
+from ..oauth import get_current_user
+from .. import database, models, schemas
 from typing import List
 
 router = APIRouter(prefix='/v1/bookings', tags=["Bookings"])
@@ -34,7 +34,7 @@ def get_bookings(property_id: int, db: Session = Depends(database.get_db), curre
     property = db.query(models.Property).filter_by(id=property_id).first()
     if not property:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail= f"Property with id of {id} not found")
+                            detail= f"Property with id of {property_id} not found")
     
     # is_landlord = db.query(models.LandLord).filter_by(email=current_user.email).first()
 

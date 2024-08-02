@@ -1,4 +1,4 @@
-from database import Base
+from .database import Base
 from sqlalchemy.orm import relationship
 from sqlalchemy import TIMESTAMP, ForeignKey, text, Boolean,  Integer, Column, String, Date, Time, Float, Text
 from datetime import datetime, timedelta
@@ -7,7 +7,7 @@ from dateutil.relativedelta import relativedelta
 
 class Users(Base):
     __tablename__ = "users"
-    id = Column(Integer, primary_key=True, nullable=False)
+    id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
     first_name = Column(String, nullable=False, unique=False)
     last_name = Column(String, nullable=False, unique=False)
     email = Column(String, nullable=False, unique=True)
@@ -21,7 +21,7 @@ class Users(Base):
 
 class LandLord(Base):
     __tablename__ = 'landlords'
-    id = Column(Integer, primary_key=True, nullable=False)
+    id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
     first_name = Column(String, nullable=False, unique=False)
     last_name = Column(String, nullable=False, unique=False)
     email = Column(String, nullable=False, unique=True)
@@ -32,11 +32,11 @@ class LandLord(Base):
     profile_pic = Column(String, nullable=True)
     created_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'), nullable=False)
 
-    property = relationship("Property", back_populates="landlord")
+    property = relationship("Property", back_populates="landlord", passive_deletes=True)
 
 class Tenant(Base):
     __tablename__ = "tenants"
-    id = Column(Integer, primary_key=True, nullable=False)
+    id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
     first_name = Column(String, nullable=False, unique=False)
     last_name = Column(String, nullable=False, unique=False)
     email = Column(String, nullable=False, unique=True)
@@ -47,16 +47,16 @@ class Tenant(Base):
     profile_pic = Column(String, nullable=True)
     created_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'), nullable=False)
 
-    payments = relationship('Payment', back_populates='tenant')
-    maintenance_requests = relationship("MaintenanceRequest", back_populates="tenant")
-    properties = relationship('Property', secondary='property_tenants')
+    payments = relationship('Payment', back_populates='tenant', passive_deletes=True)
+    maintenance_requests = relationship("MaintenanceRequest", back_populates="tenant", passive_deletes=True)
+    properties = relationship('Property', secondary='property_tenants', back_populates='tenants', passive_deletes=True)
     # properties = relationship('Property', back_populates='tenants')
-    tenant_application = relationship("TenantApplication", back_populates="tenant")
+    tenant_application = relationship("TenantApplication", back_populates="tenant", passive_deletes=True)
 
 
 class Property(Base):
     __tablename__ = "properties"
-    id = Column(Integer, primary_key=True, nullable=False)
+    id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
     landlord_id = Column(Integer, ForeignKey('landlords.id', ondelete="CASCADE"), nullable=False)
     address = Column(String, unique=False, nullable=False)
     bedrooms = Column(Integer, nullable=False)
@@ -76,19 +76,19 @@ class Property(Base):
     # file_4 = Column(String, nullable=False)
     # file_5 = Column(String, nullable=False)
 
-    payments = relationship('Payment', back_populates='property')
+    payments = relationship('Payment', back_populates='property', passive_deletes=True)
     landlord = relationship("LandLord", back_populates="property")
-    bookings = relationship("Booking", back_populates="property")
-    maintenance_requests = relationship("MaintenanceRequest", back_populates="property")
-    tenants = relationship('Tenant', secondary='property_tenants')
+    bookings = relationship("Booking", back_populates="property", passive_deletes=True)
+    maintenance_requests = relationship("MaintenanceRequest", back_populates="property", passive_deletes=True)
+    tenants = relationship('Tenant', secondary='property_tenants', back_populates='properties', passive_deletes=True)
     # tenants = relationship('Tenant', back_populates='properties')
-    tenant_application = relationship("TenantApplication", back_populates="property")
+    tenant_application = relationship("TenantApplication", back_populates="property", passive_deletes=True)
 
 
 class Booking(Base):
     __tablename__ = "bookings"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    property_id = Column(Integer, ForeignKey('properties.id'), nullable=False)
+    property_id = Column(Integer, ForeignKey('properties.id', ondelete="CASCADE"), nullable=False)
     name = Column(String, nullable=False)
     email = Column(String, nullable=True)
     phone_number = Column(String, nullable=False)
@@ -119,7 +119,7 @@ class PropertyTenant(Base):
     __tablename__ = 'property_tenants'
     tenant_id = Column(Integer, ForeignKey('tenants.id', ondelete='CASCADE'), primary_key=True, nullable=False)
     property_id = Column(Integer, ForeignKey('properties.id', ondelete='CASCADE'), primary_key=True, nullable=False)
-    landlord_removed = Column(Boolean, default=False)
+    # landlord_removed = Column(Boolean, default=False)
     # tenant = relationship("Tenant", back_populates="properties")
     # property = relationship("Property", back_populates="tenant")
 
@@ -127,7 +127,7 @@ class PropertyTenant(Base):
 class TenantApplication(Base):
     __tablename__ = 'tenant_applications'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     tenant_id = Column(Integer, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False)
     first_name = Column(String(50), nullable=False)
     last_name = Column(String(50), nullable=False)
@@ -176,8 +176,8 @@ class TenantApplication(Base):
 
 class Payment(Base):
     __tablename__ = 'payments'
-    id = Column(Integer, primary_key=True)
-    tenant_id = Column(Integer, ForeignKey('tenants.id'), nullable=False)
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
+    tenant_id = Column(Integer, ForeignKey('tenants.id', ondelete="CASCADE"), nullable=False)
     property_id = Column(Integer, ForeignKey('properties.id', ondelete="CASCADE"), nullable=False)
     amount = Column(Float, nullable=False)
 
