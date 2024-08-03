@@ -64,7 +64,7 @@ def delete_property(id: int, db: Session = Depends(get_db), current_user: int = 
 
    if property.landlord_id != current_user.id:
       raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                          detail="You are not authorized to delete this post")
+                          detail="You are not authorized to delete this property")
    
    db.delete(property)
    db.commit()
