@@ -127,7 +127,9 @@ def remove_tenant(property_id: int, tenant_id: int, db: Session = Depends(get_db
 
 @router.put('/{user_id}', status_code=status.HTTP_200_OK, response_model=schemas.UserResp)
 def update_user(user_id: int, user: schemas.UserCreate, db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
+    # user_id refers to id from tenant or landlord table not  fom users table
     
+     
     user_check = db.query(models.Users).filter_by(email=current_user.email).first()
     if not user_check:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -148,6 +150,9 @@ def update_user(user_id: int, user: schemas.UserCreate, db: Session = Depends(ge
         else:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                                 detail='user with that phone number already exists')
+        
+    if current_user.id != user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     
     user.password = utils.hash_pwd(user.password)
     if user_check.landlord:
@@ -192,6 +197,10 @@ def delete_user(user_id: int, db: Session = Depends(get_db), current_user: int =
     if not user_check:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="user not found")
+    
+    if current_user.id != user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+    
     if user_check.landlord:
         landlord_d = db.query(models.LandLord).filter_by(email=current_user.email).first()
         if not landlord_d:

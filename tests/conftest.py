@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from app.main import app
-from ..app import models, schemas
+from app import models, schemas
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.database import get_db, Base
@@ -10,7 +10,7 @@ import pytest
 DATABASE_URL = f"postgresql://postgres:wordpress@localhost:5432/rental-mgt_test"
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
-TestSessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+TestSessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, expire_on_commit=False)
 
 
 @pytest.fixture(scope="function")
@@ -71,7 +71,7 @@ def test_landlord2(client):
       "first_name": "James",
       "last_name": "Smith",
       "email": "james.smith@example.com",
-      "phone_number": "1234567890",
+      "phone_number": "12314567890",
       "landlord": True,
       "password": "1234",
       "profile_pic": "path/to/profile_pic.jpg"
@@ -126,9 +126,26 @@ def token_landlord(test_landlord):
 
 
 @pytest.fixture
+def token_landlord2(test_landlord2):
+    return create_access_token({
+        "user_id": test_landlord2['id'],
+        "landlord": True
+    })
+
+
+
+@pytest.fixture
 def token_tenant(test_tenant):
     return create_access_token({
         "user_id": test_tenant['id'],
+        "landlord": False
+    })
+
+
+@pytest.fixture
+def token_tenant2(test_tenant2):
+    return create_access_token({
+        "user_id": test_tenant2['id'],
         "landlord": False
     })
 
@@ -143,10 +160,27 @@ def authorized_landlord(client, token_landlord):
 
 
 @pytest.fixture
+def authorized_landlord2(client, token_landlord2):
+    client.headers = {
+        **client.headers,
+        "Authorization": f"Bearer {token_landlord2}"
+    }
+    return client
+
+
+@pytest.fixture
 def authorized_tenant(client, token_tenant):
     client.headers = {
         **client.headers,
         "Authorization": f"Bearer {token_tenant}"
+    }
+    return client
+
+@pytest.fixture
+def authorized_tenant2(client, token_tenant2):
+    client.headers = {
+        **client.headers,
+        "Authorization": f"Bearer {token_tenant2}"
     }
     return client
 
@@ -260,7 +294,7 @@ def test_approve_tenant(session, test_tenant_applications, test_landlord):
     test_tenant_applications.status = "approved"
     session.commit()
     prop_tenant = models.PropertyTenant(tenant_id=test_tenant_applications.tenant_id,
-                                        landlord_id=test_landlord['id'])
+                                        property_id=test_tenant_applications.property_id)
     session.add(prop_tenant)
     session.commit()
 
@@ -298,5 +332,5 @@ def test_payments(session, test_property, test_tenant, test_approve_tenant):
     new_payment = models.Payment(**payment_data)
     session.add(new_payment)
     session.commit()
-    
+
 

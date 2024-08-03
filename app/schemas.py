@@ -35,6 +35,8 @@ class UserCreate(BaseModel):
     
 
 class UserResp(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     first_name: str
     last_name: str
@@ -43,8 +45,8 @@ class UserResp(BaseModel):
     landlord: bool
     profile_pic: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    # class Config:
+    #     from_attributes = True
 
 class TenantResp(UserResp):
     tenant_application: List['TenantApplicationResp'] = []
@@ -52,6 +54,8 @@ class TenantResp(UserResp):
     pass
 
 class PropertyResp(Property):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     landlord_id: int
     created_at: datetime
@@ -62,8 +66,8 @@ class PropertyResp(Property):
     tenant_application : List['TenantApplicationResp'] = []
     payments: List['PaymentResp'] = []
 
-    class Config:
-        from_attributes = True
+    # class Config:
+    #     from_attributes = True
 
 class LandLordResp(UserResp):
     property: List[PropertyResp] = []
@@ -81,11 +85,12 @@ class BookingsCreate(Bookings):
     pass
 
 class BookingsResp(Bookings):
+    model_config = ConfigDict(from_attributes=True)
     id: int
     # property: PropertyResp
 
-    class Config:
-        from_attributes = True
+    # class Config:
+    #     from_attributes = True
 
 class Token(BaseModel):
     access_token: str
@@ -93,6 +98,7 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     model_config = ConfigDict(coerce_numbers_to_str=True)
+
     id: Optional[str] = None
     landlord: bool
 
@@ -163,11 +169,13 @@ class TenantApplicationCreate(TenantApplication):
 
 
 class TenantApplicationResp(TenantApplication):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
 
     
-    class Config:
-        from_attributes = True
+    # class Config:
+    #     from_attributes = True
 
 class TenantApplicationStatus(BaseModel):
     tenant_id: int
@@ -175,6 +183,8 @@ class TenantApplicationStatus(BaseModel):
 
 
 class Payment(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: Optional[int] = None
     tenant_id: Annotated[int, Field(ge=1)]
     property_id: Annotated[int, Field(ge=1)]
@@ -184,8 +194,8 @@ class Payment(BaseModel):
     payment_date: Optional[datetime] = None
     # status: Annotated[PaymentStatus, Field(default=PaymentStatus.pending)]
     
-    class Config:
-        from_attributes = True
+    # class Config:
+    #     from_attributes = True
 
     @field_validator('duration_months')
     @classmethod
@@ -196,8 +206,9 @@ class Payment(BaseModel):
     
 
 class PaymentResp(Payment):
-     class Config:
-        from_attributes = True
+     model_config = ConfigDict(from_attributes=True)
+    #  class Config:
+    #     from_attributes = True
     
 class PaymentCreate(BaseModel):
     tenant_id: Annotated[int, Field(ge=1)]
