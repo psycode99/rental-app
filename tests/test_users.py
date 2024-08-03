@@ -100,6 +100,8 @@ def test_update_user(authorized_landlord, test_landlord):
       "profile_pic": "path/to/profile_pic.jpg"
     }
     res = authorized_landlord.put(f'/v1/users/{test_landlord["id"]}', json=user_data)
+    updated_user = schemas.UserResp(**res.json())
+    assert updated_user.email == user_data['email']
     assert res.status_code == 200
     assert res.json().get('first_name') == "Jon"
 

@@ -125,6 +125,8 @@ def test_update_property_authorized(authorized_landlord, test_landlord, test_pro
     }
 
     res = authorized_landlord.put(f'/v1/properties/{test_property[0].id}', json=property_data)
+    updated_data = schemas.PropertyResp(**res.json())
+    assert updated_data.price == 450000.0
     assert res.status_code == 200
     assert res.json().get('bedrooms') == 5
 

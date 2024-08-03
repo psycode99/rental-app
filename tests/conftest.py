@@ -246,6 +246,8 @@ def test_booking(session, test_property):
     new_booking = models.Booking(**booking_data)
     session.add(new_booking)
     session.commit()
+    session.refresh(new_booking)
+    return new_booking
     
 
 @pytest.fixture
