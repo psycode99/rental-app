@@ -115,6 +115,10 @@ def update_maintenance_req(property_id: int, MR_id: int, MR: schemas.Maintenance
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Maintenance Request not found")
     
+    if property_check.landlord_id != current_user.id or maintenance_req_check.tenant_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="You are not associated with this property")
+    
     stmt = (
         update(models.MaintenanceRequest).
         where(models.MaintenanceRequest.id == MR_id).
