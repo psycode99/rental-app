@@ -93,9 +93,9 @@ def update_application_status(property_id: int, app_id: int, app_status: schemas
         db.add(new_entry)
         db.commit()
 
-    elif app_status.application_status == 'rejected':
-        application_check.application_status = "rejected"
-        db.commit()
+    # elif app_status.application_status == 'rejected':
+    #     application_check.application_status = "rejected"
+    #     db.commit()
 
     return application_check
 

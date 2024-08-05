@@ -30,7 +30,7 @@ def make_rent_payment(property_id: int, payment: schemas.PaymentCreate, db: Sess
 
 
 @router.get('/{property_id}', status_code=status.HTTP_200_OK, response_model=List[schemas.PaymentResp])
-def get_payment_history(property_id: int, db: Session = Depends(database.get_db), current_user: int = Depends(get_current_user)):
+def get_payment_history_property(property_id: int, db: Session = Depends(database.get_db), current_user: int = Depends(get_current_user)):
     property_check = db.query(models.Property).filter_by(id=property_id).first()
     if not property_check:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
