@@ -44,6 +44,24 @@ def get_payment_history_property(property_id: int, db: Session = Depends(databas
     
     return payment_history
 
+
+@router.get('/', status_code=status.HTTP_200_OK, response_model=List[schemas.PaymentResp])
+def get_payment_history_user( db: Session = Depends(database.get_db), current_user: int = Depends(get_current_user)):
+    user_check = db.query(models.Users).filter_by(email=current_user.email).first()
+    if not user_check:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="User not found")
+    if current_user.landlord:
+        payments = db.query(models.Payment).join(models.Payment.property).filter(models.Property.landlord_id == current_user.id).all()
+    else:
+        payments = db.query(models.Payment).filter_by(tenant_id=current_user.id).all()
+
+    if not payments:
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT,
+                            detail="No available Payments")
+
+    return payments
+
     
 
 

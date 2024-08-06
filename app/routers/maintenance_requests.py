@@ -82,8 +82,24 @@ def get_maintenance_reqs(property_id: int, db: Session = Depends(database.get_db
     #                             detail="You have not rented this property")
         
         # Get maintenance requests
+
     
-        
+@router.get('/', status_code=status.HTTP_200_OK, response_model=List[schemas.MaintenanceRequestResp])
+def get_maintenance_reqs_user(db: Session = Depends(database.get_db), current_user: int = Depends(get_current_user)):
+    user_check = db.query(models.Users).filter_by(email=current_user.email).first()
+    if not user_check:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="User not found")
+    if current_user.landlord:
+        reqs = db.query(models.MaintenanceRequest).join(models.MaintenanceRequest.property).filter(models.Property.landlord_id == current_user.id).all()
+    else:
+        reqs = db.query(models.MaintenanceRequest).filter_by(tenant_id=current_user.id).all()
+
+    if not reqs:
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT,
+                            detail="No available requests")
+
+    return reqs        
 
 
 @router.get('/{property_id}/{MR_id}', status_code=status.HTTP_200_OK, response_model=schemas.MaintenanceRequestResp)

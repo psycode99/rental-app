@@ -41,6 +41,23 @@ def get_applications(property_id: int, db:  Session = Depends(database.get_db), 
     return applications
 
 
+@router.get('/', status_code=status.HTTP_200_OK, response_model=List[schemas.TenantApplicationResp])
+def get_applications(db:  Session = Depends(database.get_db), current_user: int = Depends(get_current_user)):
+    user_check = db.query(models.Users).filter_by(email=current_user.email).first()
+    if not user_check:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="User not found")
+    if current_user.landlord:
+        applications = db.query(models.TenantApplication).join(models.TenantApplication.property).filter(models.Property.landlord_id == current_user.id).all()
+    else:
+        applications = db.query(models.TenantApplication).filter_by(tenant_id=current_user.id).all()
+
+    if not applications:
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT,
+                            detail="No available applications")    
+    return applications
+
+
 @router.get('/{property_id}/{app_id}', status_code=status.HTTP_200_OK, response_model=schemas.TenantApplicationResp)
 def get_application(property_id: int, app_id: int, db:  Session = Depends(database.get_db), current_user: int = Depends(get_current_user)):
     property_check = db.query(models.Property).filter_by(id=property_id).first()

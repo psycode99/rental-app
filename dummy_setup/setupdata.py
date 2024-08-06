@@ -1,3 +1,9 @@
+import sys
+import os
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(SCRIPT_DIR))
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from datetime import datetime, date, time, timedelta

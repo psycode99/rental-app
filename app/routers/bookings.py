@@ -1,3 +1,4 @@
+from email.policy import HTTP
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from ..oauth import get_current_user
@@ -52,6 +53,25 @@ def get_bookings(property_id: int, db: Session = Depends(database.get_db), curre
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
 
     return bookings
+
+
+
+@router.get('/', status_code=status.HTTP_200_OK, response_model=List[schemas.BookingsResp])
+def get_bookings_user(db: Session = Depends(database.get_db), current_user: int = Depends(get_current_user)):
+    user_check = db.query(models.Users).filter_by(email=current_user.email).first()
+    if not user_check:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="User not found")
+    if current_user.landlord:
+        bookings = db.query(models.Booking).join(models.Booking.property).filter(models.Property.landlord_id == current_user.id).all()
+    else:
+        bookings = db.query(models.Booking).filter_by(email=current_user.email).all()
+
+    if not bookings:
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
+
+    return bookings
+
 
 @router.get('/{property_id}/{booking_id}', status_code=status.HTTP_200_OK, response_model=schemas.BookingsResp)
 def get_booking(property_id: int, booking_id: int,  db: Session = Depends(database.get_db), current_user: int = Depends(get_current_user)):
