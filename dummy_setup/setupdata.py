@@ -52,6 +52,32 @@ try:
     session.add(landlord)
     session.flush()  # To get the landlord ID
 
+    landlord_user2 = Users(
+        first_name="Favour",
+        last_name="George",
+        email="georgefavour494@gmail.com",
+        phone_number="123456789099",
+        password=hash_pwd("1234"),
+        landlord=True,
+        profile_pic="path/to/profile_pic.jpg",
+        created_at=datetime.now()
+    )
+    session.add(landlord_user2)
+    session.flush()  # To get the user ID
+
+    landlord2 = LandLord(
+        # id=landlord_user.id,  # Ensure the landlord ID matches the user ID
+       first_name="Favour",
+        last_name="George",
+        email="georgefavour494@gmail.com",
+        phone_number="123456789099",
+        password=hash_pwd("1234"),
+        profile_pic="path/to/profile_pic.jpg",
+        created_at=datetime.now()
+    )
+    session.add(landlord2)
+    session.flush()  # To get the landlord ID
+
     # Add properties
     property_1 = Property(
         landlord_id=landlord.id,

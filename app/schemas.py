@@ -236,3 +236,23 @@ class PaymentCreate(BaseModel):
 class PropertyTenantResp(BaseModel):
     property_id: int
     tenant_id: int
+
+
+class ForgotPasswordOTP(BaseModel):
+    otp: str
+    email: str
+
+
+class ForgotPasswordEmail(BaseModel):
+    email: str
+
+
+class VerifyOTP(BaseModel):
+    otp: str
+    typed_otp: str
+    email: str
+
+
+class ResetPassword(BaseModel):
+    email: str
+    new_password: str

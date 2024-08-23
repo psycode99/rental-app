@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from .database import engine
-from . import models
+from .database import engine, SessionLocal
+from . import models, utils
 from pathlib import Path
+import threading
+import time
+from sqlalchemy.orm import Session
 from .routers import users, property, auth, uploads, bookings, maintenance_requests, tenant_applications, payments
 
 models.Base.metadata.create_all(bind=engine)
@@ -12,10 +15,28 @@ current_file_dir = current_file.parent
 project_root = current_file_dir.parent
 project_root_absolute = project_root.resolve()
 static_root_absolute = project_root_absolute /"app"/"static"
-print(static_root_absolute)
+
+
+def send_rent_notifications():
+    while True:
+        db = SessionLocal()  # Create a new session for the thread
+        try:
+            utils.check_rent_due_dates(db)
+        finally:
+            db.close()
+        time.sleep(86400)  # Sleep for 24 hours
+
+def start_background_thread():
+    thread = threading.Thread(target=send_rent_notifications)
+    thread.start()
 
 app = FastAPI()
 app.mount('/static', StaticFiles(directory="static"), name="static")
+
+@app.on_event("startup")
+def startup_event():
+    start_background_thread()
+
 
 @app.get('/')
 def main():
