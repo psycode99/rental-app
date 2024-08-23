@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status
-from app.database import get_db
-from app.utils import send_rent_notification
-from app import models
+from ..database import get_db
+from ..utils import send_rent_notification
+from .. import models
 import datetime
 from sqlalchemy.orm import Session
 
