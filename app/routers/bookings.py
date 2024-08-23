@@ -1,9 +1,10 @@
-from email.policy import HTTP
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from ..oauth import get_current_user
 from .. import database, models, schemas
 from typing import List
+from fastapi_pagination import Page
+from fastapi_pagination.ext.sqlalchemy import paginate
 
 router = APIRouter(prefix='/v1/bookings', tags=["Bookings"])
 
@@ -56,21 +57,21 @@ def get_bookings(property_id: int, db: Session = Depends(database.get_db), curre
 
 
 
-@router.get('/', status_code=status.HTTP_200_OK, response_model=List[schemas.BookingsResp])
-def get_bookings_user(db: Session = Depends(database.get_db), current_user: int = Depends(get_current_user)):
+@router.get('/', status_code=status.HTTP_200_OK, response_model=Page[schemas.BookingsResp])
+def get_bookings_user(db: Session = Depends(database.get_db), current_user: int = Depends(get_current_user)) -> Page[schemas.BookingsResp]:
     user_check = db.query(models.Users).filter_by(email=current_user.email).first()
     if not user_check:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="User not found")
     if current_user.landlord:
-        bookings = db.query(models.Booking).join(models.Booking.property).filter(models.Property.landlord_id == current_user.id).all()
+        bookings = db.query(models.Booking).join(models.Booking.property).filter(models.Property.landlord_id == current_user.id)
     else:
-        bookings = db.query(models.Booking).filter_by(email=current_user.email).all()
+        bookings = db.query(models.Booking).filter_by(email=current_user.email)
 
     if not bookings:
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
 
-    return bookings
+    return paginate(bookings)
 
 
 @router.get('/{property_id}/{booking_id}', status_code=status.HTTP_200_OK, response_model=schemas.BookingsResp)

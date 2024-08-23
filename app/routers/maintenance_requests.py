@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from ..oauth import get_current_user
 from .. import schemas, models, database
 from typing import List
+from fastapi_pagination import Page
+from fastapi_pagination.ext.sqlalchemy import paginate
 
 
 router = APIRouter(prefix='/v1/maintenance_reqs', tags=["Maintenance Requests"])
@@ -84,22 +86,22 @@ def get_maintenance_reqs(property_id: int, db: Session = Depends(database.get_db
         # Get maintenance requests
 
     
-@router.get('/', status_code=status.HTTP_200_OK, response_model=List[schemas.MaintenanceRequestResp])
+@router.get('/', status_code=status.HTTP_200_OK, response_model=Page[schemas.MaintenanceRequestResp])
 def get_maintenance_reqs_user(db: Session = Depends(database.get_db), current_user: int = Depends(get_current_user)):
     user_check = db.query(models.Users).filter_by(email=current_user.email).first()
     if not user_check:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="User not found")
     if current_user.landlord:
-        reqs = db.query(models.MaintenanceRequest).join(models.MaintenanceRequest.property).filter(models.Property.landlord_id == current_user.id).all()
+        reqs = db.query(models.MaintenanceRequest).join(models.MaintenanceRequest.property).filter(models.Property.landlord_id == current_user.id)
     else:
-        reqs = db.query(models.MaintenanceRequest).filter_by(tenant_id=current_user.id).all()
+        reqs = db.query(models.MaintenanceRequest).filter_by(tenant_id=current_user.id)
 
     if not reqs:
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT,
                             detail="No available requests")
 
-    return reqs        
+    return paginate(reqs)        
 
 
 @router.get('/{property_id}/{MR_id}', status_code=status.HTTP_200_OK, response_model=schemas.MaintenanceRequestResp)

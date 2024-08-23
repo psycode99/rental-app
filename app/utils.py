@@ -46,24 +46,24 @@ def send_rent_notification(recipient_email: str, recipient_name: str, days_until
         print(f"Failed to send email: {e}")
 
 
-def check_rent_due_dates(db: Session):
-    # Example list of tenants with rent due dates
-    payments = db.query(models.Payment).all()
-    # Get today's date
-    today = datetime.datetime.now().date()
+# def check_rent_due_dates(db: Session):
+#     # Example list of tenants with rent due dates
+#     payments = db.query(models.Payment).all()
+#     # Get today's date
+#     today = datetime.datetime.now().date()
 
-    for payment in payments:
-        due_date = payment.due_date
+#     for payment in payments:
+#         due_date = payment.due_date
 
-        # Calculate the number of days until the due date
-        days_until_due = (due_date - today).days
+#         # Calculate the number of days until the due date
+#         days_until_due = (due_date - today).days
 
-        # Check if it's 3, 2, or 1 day(s) before the due date
-        if days_until_due in [3, 2, 1]:
-            tenant = db.query(models.Tenant).filter_by(id=payment.tenant_id).first()
-            prop = db.query(models.Property).filter_by(id=payment.property_id).first()
+#         # Check if it's 3, 2, or 1 day(s) before the due date
+#         if days_until_due in [3, 2, 1]:
+#             tenant = db.query(models.Tenant).filter_by(id=payment.tenant_id).first()
+#             prop = db.query(models.Property).filter_by(id=payment.property_id).first()
 
-            send_rent_notification(tenant.email, tenant.first_name, days_until_due, prop.address)
+#             send_rent_notification(tenant.email, tenant.first_name, days_until_due, prop.address)
 
 
 

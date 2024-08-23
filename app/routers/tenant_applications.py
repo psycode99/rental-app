@@ -3,6 +3,8 @@ from fastapi import APIRouter,  HTTPException, Depends, Response, status
 from sqlalchemy.orm import Session
 from ..oauth import get_current_user
 from .. import schemas, models, database
+from fastapi_pagination import Page
+from fastapi_pagination.ext.sqlalchemy import paginate
 
 
 router = APIRouter(prefix='/v1/applications', tags=['Tenant Applications'])
@@ -41,21 +43,21 @@ def get_applications(property_id: int, db:  Session = Depends(database.get_db), 
     return applications
 
 
-@router.get('/', status_code=status.HTTP_200_OK, response_model=List[schemas.TenantApplicationResp])
-def get_applications(db:  Session = Depends(database.get_db), current_user: int = Depends(get_current_user)):
+@router.get('/', status_code=status.HTTP_200_OK, response_model=Page[schemas.TenantApplicationResp])
+def get_applications_user(db:  Session = Depends(database.get_db), current_user: int = Depends(get_current_user)):
     user_check = db.query(models.Users).filter_by(email=current_user.email).first()
     if not user_check:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="User not found")
     if current_user.landlord:
-        applications = db.query(models.TenantApplication).join(models.TenantApplication.property).filter(models.Property.landlord_id == current_user.id).all()
+        applications = db.query(models.TenantApplication).join(models.TenantApplication.property).filter(models.Property.landlord_id == current_user.id)
     else:
-        applications = db.query(models.TenantApplication).filter_by(tenant_id=current_user.id).all()
+        applications = db.query(models.TenantApplication).filter_by(tenant_id=current_user.id)
 
     if not applications:
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT,
                             detail="No available applications")    
-    return applications
+    return paginate(applications)
 
 
 @router.get('/{property_id}/{app_id}', status_code=status.HTTP_200_OK, response_model=schemas.TenantApplicationResp)

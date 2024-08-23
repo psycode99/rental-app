@@ -6,10 +6,13 @@ from ..oauth import get_current_user
 from .. import models, schemas
 from sqlalchemy.orm import Session
 import os
+from fastapi_pagination.ext.sqlalchemy import paginate
+from fastapi_pagination import Page
 
 router = APIRouter(prefix='/v1/properties', tags=['Properties'])
 
-@router.post('/', status_code=status.HTTP_201_CREATED, response_model=schemas.PropertyResp)
+
+@router.post('/', status_code=status.HTTP_201_CREATED, response_model=schemas.PropertyResp) 
 def create_property(property: schemas.PropertyCreate, db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
    is_landlord = db.query(models.LandLord).filter_by(email=current_user.email, id=property.landlord_id).first()
    if not is_landlord:
@@ -27,14 +30,17 @@ def create_property(property: schemas.PropertyCreate, db: Session = Depends(get_
    return new_property
 
 
-@router.get('/', status_code=status.HTTP_200_OK, response_model=List[schemas.PropertyResp])
-def get_properties(db: Session = Depends(get_db)):
-   properties = db.query(models.Property).all()
+@router.get('/', status_code=status.HTTP_200_OK, response_model=Page[schemas.PropertyResp])
+def get_properties(db: Session = Depends(get_db)) -> Page[schemas.PropertyResp]:
+    # Create the query object
+    properties_query = db.query(models.Property)
 
-   if not properties:
-      raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
-   
-   return properties
+    # Check if any properties exist
+    if not properties_query.first():
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
+    
+    # Pass the query object to paginate
+    return paginate(properties_query)
 
 
 @router.get('/{id}', status_code=status.HTTP_200_OK, response_model=schemas.PropertyResp)
