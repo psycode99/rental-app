@@ -54,7 +54,7 @@ def get_applications_user(db:  Session = Depends(database.get_db), current_user:
     else:
         applications = db.query(models.TenantApplication).filter_by(tenant_id=current_user.id)
 
-    if not applications:
+    if not applications.first():
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT,
                             detail="No available applications")    
     return paginate(applications)

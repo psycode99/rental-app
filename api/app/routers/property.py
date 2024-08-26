@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, status, Depends, HTTPException, Response
 from sqlalchemy import update
 from ..database import get_db
@@ -41,6 +41,41 @@ def get_properties(db: Session = Depends(get_db)) -> Page[schemas.PropertyResp]:
     
     # Pass the query object to paginate
     return paginate(properties_query)
+
+
+@router.post('/search', status_code=status.HTTP_200_OK, response_model=Page[schemas.PropertyResp])
+def get_properties(
+    db: Session = Depends(get_db),
+    state: Optional[str] = None,
+    city: Optional[str] = None,
+    status: Optional[str] = "available",
+    price: Optional[float] = None,
+    bedrooms: Optional[int] = None,
+    bathrooms: Optional[float] = None
+) -> Page[schemas.PropertyResp]:
+    # Start with the base query
+    query = db.query(models.Property)
+
+    # Apply filters conditionally
+    if state:
+        query = query.filter(models.Property.state.ilike(f"%{state}%"))
+    if city:
+        query = query.filter(models.Property.city.ilike(f"%{city}%"))
+    if status:
+        query = query.filter(models.Property.status == status)
+    if price is not None:
+        query = query.filter(models.Property.price <= price)
+    if bedrooms is not None:
+        query = query.filter(models.Property.bedrooms >= bedrooms)
+    if bathrooms is not None:
+        query = query.filter(models.Property.bathrooms >= bathrooms)
+
+    # Check if the filtered query returns any results
+    if query.count() == 0:
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
+
+    # Return paginated results
+    return paginate(query)
 
 
 @router.get('/{id}', status_code=status.HTTP_200_OK, response_model=schemas.PropertyResp)

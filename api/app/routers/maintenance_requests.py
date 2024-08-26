@@ -97,7 +97,7 @@ def get_maintenance_reqs_user(db: Session = Depends(database.get_db), current_us
     else:
         reqs = db.query(models.MaintenanceRequest).filter_by(tenant_id=current_user.id)
 
-    if not reqs:
+    if not reqs.first():
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT,
                             detail="No available requests")
 

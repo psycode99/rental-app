@@ -51,7 +51,8 @@ def get_bookings(property_id: int, db: Session = Depends(database.get_db), curre
 
     bookings = db.query(models.Booking).filter_by(property_id=property.id).all()
     if not bookings:
-        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT,
+                            detail="No available bookings")
 
     return bookings
 
@@ -68,8 +69,9 @@ def get_bookings_user(db: Session = Depends(database.get_db), current_user: int 
     else:
         bookings = db.query(models.Booking).filter_by(email=current_user.email)
 
-    if not bookings:
-        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
+    if not bookings.first():
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT,
+                            detail="No available bookings")
 
     return paginate(bookings)
 
