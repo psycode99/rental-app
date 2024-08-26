@@ -43,8 +43,18 @@ def get_properties(db: Session = Depends(get_db)) -> Page[schemas.PropertyResp]:
     return paginate(properties_query)
 
 
+@router.get('/user', status_code=status.HTTP_200_OK, response_model=Page[schemas.PropertyResp])
+def get_properties(db: Session = Depends(get_db), current_user: int = Depends(get_current_user)) -> Page[schemas.PropertyResp]:
+    if current_user.landlord:
+        properties = db.query(models.Property).filter_by(landlord_id=current_user.id)
+    else:
+        properties = db.query(models.Property).join(models.Property.tenants).filter(models.Tenant.id == current_user.id)
+      
+    return paginate(properties)
+
+
 @router.post('/search', status_code=status.HTTP_200_OK, response_model=Page[schemas.PropertyResp])
-def get_properties(
+def search(
     db: Session = Depends(get_db),
     state: Optional[str] = None,
     city: Optional[str] = None,

@@ -19,9 +19,15 @@ def login(user_credentials: OAuth2PasswordRequestForm = Depends(), db: Session =
                             detail="Invalid Credentials")
     if user.landlord == True:
         landlord = db.query(models.LandLord).filter_by(email=user_credentials.username).first()
+        if not landlord:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Invalid Credentials")
         access_token = oauth.create_access_token({"user_id": landlord.id, "landlord": landlord.landlord})
     else:
         tenant = db.query(models.Tenant).filter_by(email=user_credentials.username).first()
+        if not tenant:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Invalid Credentials")
         access_token = oauth.create_access_token({"user_id": tenant.id, "landlord": tenant.landlord})
 
     return {"access_token": access_token, "token_type": "bearer"}
