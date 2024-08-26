@@ -1,4 +1,4 @@
-from app import schemas
+from ..app import schemas
 import pytest
 
 
@@ -73,13 +73,31 @@ def test_create_property_unauthorized(test_landlord, client):
 def test_get_properties(client, test_property):
     res = client.get('/v1/properties')
     assert res.status_code == 200
-    assert res.json()[0].get('bedrooms') == 3
+    assert res.json().get('items')[0]["bedrooms"] == 3
+
+
+def test_get_properties_user_authorized(authorized_landlord, test_property):
+    res = authorized_landlord.get('/v1/properties/user')
+    assert res.status_code == 200
+    assert len(res.json().get('items')) == 1
+    assert res.json().get('items')[0]["bedrooms"] == 3
+
+
+def test_get_properties_user_unauthorized(client, test_property):
+    res = client.get('/v1/properties/user')
+    assert res.status_code == 401
 
 
 def test_get_property(client, test_property):
     res = client.get(f'/v1/properties/{test_property[0].id}')
     assert res.status_code == 200
     assert res.json().get('bedrooms') == 3
+
+
+def test_search_property(client, test_property):
+    res = client.post(f"/v1/properties/search?price=400000")
+    assert res.status_code == 200
+    assert len(res.json().get('items')) == 2
 
 
 def test_delete_property_authorized(authorized_landlord, test_property, test_booking, test_tenant_applications, test_payments, test_maintenance_reqs ):

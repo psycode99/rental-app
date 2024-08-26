@@ -1,5 +1,4 @@
-from app import schemas
-from tests.conftest import authorized_landlord
+from ..app import schemas
 
 
 def test_create_booking(client, test_property):
@@ -83,7 +82,7 @@ def test_get_bookings_unauthorized(client, test_property, test_booking):
 def test_get_bookings_user_authorized(authorized_landlord, test_property, test_booking):
     res = authorized_landlord.get(f'/v1/bookings/')
     assert res.status_code == 200
-    assert res.json()[0].get("name") == "Alice Johnson"
+    assert res.json().get("items")[0]['name'] == "Alice Johnson"
     
 
 def test_get_bookings_user_authorized_empty(authorized_landlord, test_property):

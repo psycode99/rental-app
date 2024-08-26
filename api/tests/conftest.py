@@ -1,10 +1,10 @@
 from fastapi.testclient import TestClient
-from app.main import app
-from app import models, schemas
+from ..app.main import app
+from ..app import models, schemas
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from app.database import get_db, Base
-from app.oauth import create_access_token
+from ..app.database import get_db, Base
+from ..app.oauth import create_access_token
 import pytest
 
 DATABASE_URL = f"postgresql://postgres:wordpress@localhost:5432/rental-mgt_test"

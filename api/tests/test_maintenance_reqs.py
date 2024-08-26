@@ -1,4 +1,4 @@
-from app import schemas
+from ..app import schemas
 import pytest
 
 
@@ -118,7 +118,7 @@ def test_get_maintenance_reqs_unauthorized(client, test_property, test_maintenan
 def test_get_maintenance_reqs_user_authorized(authorized_landlord, test_property, test_maintenance_reqs):
     res = authorized_landlord.get(f'/v1/maintenance_reqs/')
     assert res.status_code == 200
-    assert res.json()[0].get('property_id') == test_property[0].id
+    assert res.json().get('items')[0]['property_id'] == test_property[0].id
 
 
 def test_get_maintenance_reqs_user_empty(authorized_landlord):

@@ -1,8 +1,7 @@
-from app import schemas
+from ..app import schemas
 import pytest
 from jose import jwt
-from app.oauth import SECRET_KEY, ALGORITHM
-from fastapi import HTTPException
+from ..app.oauth import SECRET_KEY, ALGORITHM
 
 def test_login(client, test_tenant):
     res = client.post('/v1/auth/login', data={"username":test_tenant['email'], "password":test_tenant['password']})

@@ -1,5 +1,5 @@
 import pytest
-from app import schemas
+from ..app import schemas
 
 
 def test_create_tenant_application_authorized(authorized_tenant, test_property, test_tenant):
@@ -213,7 +213,7 @@ def test_get_tenant_applications_unauthorized(client, test_tenant_applications, 
 def test_get_tenant_applications_user_authorized(authorized_landlord, test_tenant_applications, test_property):
     res = authorized_landlord.get(f'/v1/applications/')
     assert res.status_code == 200
-    assert res.json()[0].get('job_title') == "Software Developer"
+    assert res.json().get('items')[0]["job_title"] == "Software Developer"
 
     
 def test_get_tenant_applications_user_empty(authorized_landlord, test_property):

@@ -1,4 +1,4 @@
-from app import schemas
+from ..app import schemas
 
 
 def test_make_rent_payment_authorized(authorized_tenant, test_approve_tenant, test_tenant, test_property):

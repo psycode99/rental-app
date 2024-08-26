@@ -1,10 +1,8 @@
-from app import schemas
+from ..app import schemas
 import pytest
 from jose import jwt
-from app.oauth import SECRET_KEY, ALGORITHM
+from ..app.oauth import SECRET_KEY, ALGORITHM
 from fastapi import HTTPException
-
-from tests.conftest import authorized_landlord2, client
 
 def test_root(client):
     res = client.get('/')
