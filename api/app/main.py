@@ -31,7 +31,7 @@ static_root_absolute = project_root_absolute /"app"/"static"
 #     thread.start()
 
 app = FastAPI()
-app.mount('/static', StaticFiles(directory="static"), name="static")
+app.mount('/api/static', StaticFiles(directory="api/static"), name="static")
 
 
 # @app.on_event("startup")

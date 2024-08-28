@@ -15,9 +15,10 @@ from typing import Optional
 router = APIRouter(prefix='/v1/uploads', tags=['Uploads'])
 
 
-UPLOAD_FOLDER = Path('static/property_uploads')
-TENANT_APPLICATIONS = Path('static/tenant_applications')
-PROFILE_PIC_UPLOAD_DIR = Path("static/profile_pics")
+UPLOAD_FOLDER = Path('api/static/property_uploads')
+TENANT_APPLICATIONS = Path('api/static/tenant_applications')
+PROFILE_PIC_UPLOAD_DIR = Path("api/static/profile_pics")
+
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 TENANT_APPLICATIONS_ALLOWED_EXT = {'pdf'}
@@ -54,22 +55,25 @@ def get_unique_filename(filename: str) -> str:
 
 
 @router.post("/upload_profile_pic")
-async def upload_profile_pic(file: UploadFile = File(...)):
+def upload_profile_pic(file: UploadFile = File(...)):
     if not allowed_file(file.filename, ALLOWED_EXTENSIONS):
         raise HTTPException(status_code=400, detail="File type not allowed")
 
     unique_filename = get_unique_filename(file.filename)
     file_path = os.path.join(PROFILE_PIC_UPLOAD_DIR, unique_filename)
     
-    with open(file_path, "wb") as f:
-        f.write(await file.read())
+    try:
+        with open(file_path, "wb") as f:
+            # file.file is a SpooledTemporaryFile, which can be used directly
+            f.write(file.file.read())  # Read the contents of the file and write it to the disk
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"File upload failed: {e}")
 
     return JSONResponse(content={"message": "File successfully uploaded", "filename": unique_filename})
 
 
-
 @router.post("/upload_imgs")
-async def upload_files_imgs(files: List[UploadFile] = File(...)):
+def upload_files_imgs(files: List[UploadFile] = File(...)):
     if len(files) > 3:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="can not upload more than 3 files")
@@ -82,8 +86,12 @@ async def upload_files_imgs(files: List[UploadFile] = File(...)):
         unique_filename = get_unique_filename(file.filename)
         file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
 
-        with open(file_path, "wb") as f:
-            f.write(await file.read())
+        try:
+            with open(file_path, "wb") as f:
+            # file.file is a SpooledTemporaryFile, which can be used directly
+                f.write(file.file.read())  # Read the contents of the file and write it to the disk
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"File upload failed: {e}")
         
         filenames.append(unique_filename)
     
@@ -107,7 +115,7 @@ async def upload_files_imgs(files: List[UploadFile] = File(...)):
 
 
 @router.post("/upload_applications")
-async def upload_files(files: List[UploadFile] = File(...)):
+def upload_files(files: List[UploadFile] = File(...)):
     if len(files) > 3:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="can not upload more than 3 files")
@@ -120,8 +128,12 @@ async def upload_files(files: List[UploadFile] = File(...)):
         unique_filename = get_unique_filename(file.filename)
         file_path = os.path.join(TENANT_APPLICATIONS, unique_filename)
 
-        with open(file_path, "wb") as f:
-            f.write(await file.read())
+        try:
+            with open(file_path, "wb") as f:
+            # file.file is a SpooledTemporaryFile, which can be used directly
+                f.write(file.file.read())  # Read the contents of the file and write it to the disk
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"File upload failed: {e}")
         
         filenames.append(unique_filename)
     

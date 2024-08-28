@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import declarative_base
 
 
-SQLALCHEMY_DATABASE_URL = f"postgresql://postgres:wordpress@localhost:5432/rental-mgt"
+SQLALCHEMY_DATABASE_URL = f"postgresql://postgres:wordpress@host.docker.internal:5432/rental-mgt"
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
 
