@@ -1,19 +1,63 @@
 from flask import *
 import requests
-
+import jwt
 
 app = Flask(__name__)
 app.secret_key = "qwerty"
 host = "http://localhost:8000"
+SECRET_KEY = "Q4epX5pDd_kjTbvRZ-8tLrXjFskv45pXyswhv48H8oM"
+
+def verify_token(token):
+    try:
+        # Decode the JWT token (use your secret key here)
+        decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return decoded
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
 
 
 @app.route('/', methods=['POST','GET'])
 def home():
-    return render_template("home.html")
+    token = request.cookies.get('access_token')
+    logged_in = None
+    if token and verify_token(token):
+         token_verification = verify_token(token)
+         if token_verification['landlord']:
+             res = requests.get(f"{host}/v1/users/landlords/{token_verification['user_id']}")
+             data = res.json()
+             data['img_path'] = "http://localhost:8000/static/profile_pics/"
+         else:
+            res = requests.get(f"{host}/v1/users/tenants/{token_verification['user_id']}")
+            data = res.json()
+            data['img_path'] = "http://localhost:8000/static/profile_pics/"
+         logged_in = True
+         return render_template("home.html", logged_in=logged_in, data=data)
 
+    else:
+         logged_in = False
+         return render_template("home.html", logged_in=logged_in)
 
+   
 @app.route('/login', methods=['POST', "GET"])
 def login():
+    if request.method == "POST":
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        res = requests.post(f"{host}/v1/auth/login", data={"username":email, "password":password})
+        if res.status_code == 200:
+            access_code = res.json().get('access_token')
+            response =  redirect(url_for('home'))
+            response.set_cookie('access_token', access_code)
+            return response
+        else:
+            return {
+                "status_code": str(res.status_code),
+                "detail": str(res.json().get('detail'))
+            }
+
     return render_template("login.html")
 
 
@@ -84,10 +128,6 @@ def profile_pic():
                         "profile_pic": session['profile_pic']
                     }
                     user_id = session['user_id']
-                    print("----------------------------DEBUG____________")
-                    print(session['email'])
-                    print(session['password'])
-                    print(session['landlord'])
                     login = requests.post(f"{host}/v1/auth/login", data={"username":signup_data['email'], "password":signup_data['password']})
                     if login.status_code == 200:
                         access_token = login.json().get("access_token")
@@ -115,6 +155,14 @@ def profile_pic():
                 
     return render_template('profile_pic.html')
 
+
+
+@app.route('/change_profile_pic', methods=['POST', 'GET'])
+def change_profile_pic():
+    token = request.cookies.get('access_token')
+    logged_in = None
+    if token and verify_token(token):
+        
 
 @app.route('/property', methods=['POST', 'GET'])
 def property():

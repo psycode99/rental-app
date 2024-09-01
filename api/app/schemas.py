@@ -41,6 +41,7 @@ class UserResp(BaseModel):
     first_name: str
     last_name: str
     email: EmailStr
+    phone_number: str
     created_at: datetime
     landlord: bool
     profile_pic: Optional[str] = None

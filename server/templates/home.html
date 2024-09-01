@@ -454,18 +454,22 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#">Contact</a>
                     </li>
+                    {%  if logged_in %}
+                    <li class="nav-item">
+                        <a href="#"><img src="{{data['img_path']}}{{data['profile_pic']}}" alt="Profile" class="profile-pic" data-bs-toggle="modal" data-bs-target="#userDetailsModal"></a>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-logout">Logout</button>
+                    </li>
+                    {% else %}
                     <li class="nav-item">
                         <button class="btn btn-login" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
                     </li>
                     <li class="nav-item">
                         <button class="btn btn-signup">Sign Up</button>
                     </li>
-                    <li class="nav-item">
-                        <a href="#"><img src="./pp.PNG" alt="Profile" class="profile-pic" data-bs-toggle="modal" data-bs-target="#userDetailsModal"></a>
-                    </li>
-                    <li class="nav-item">
-                        <button class="btn btn-logout">Logout</button>
-                    </li>
+                    {% endif %}
+                   
                 </ul>
                 
             </div>
@@ -693,12 +697,12 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-body">
-                    <form action="/upload_image" method="POST" enctype="multipart/form-data">
+                    <form action="change_profile_pic" method="POST" enctype="multipart/form-data">
                         <div class="d-flex justify-content-center mb-4">
                             <div class="profile-pic-container">
                                 <input type="file" id="profilePicInput" name="profile_pic" class="profile-pic-input" accept="image/*">
                                 <label for="profilePicInput" class="profile-pic-label">
-                                    <img id="profilePic" src="pp.PNG" alt="Profile Picture" class="profile-pic2">
+                                    <img id="profilePic" src="{{data['img_path']}}{{data['profile_pic']}}" alt="Profile Picture" class="profile-pic2">
                                     <div class="profile-pic-overlay">
                                         <i class="fas fa-camera"></i>
                                         <span>Change</span>
@@ -707,25 +711,26 @@
                                 <a href="#" class="change-btn">Save</a>
                             </div>
                         </div>
+                    </form>
                     <div class="mb-3">
                         <label for="firstName" class="form-label">First Name</label>
-                        <input type="text" class="form-control" id="firstName" value="John" disabled>
+                        <input type="text" class="form-control" id="firstName" value="{{data['first_name']}}" disabled>
                     </div>
                     <div class="mb-3">
                         <label for="lastName" class="form-label">Last Name</label>
-                        <input type="text" class="form-control" id="lastName" value="Doe" disabled>
+                        <input type="text" class="form-control" id="lastName" value="{{data['last_name']}}" disabled>
                     </div>
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" value="johndoe@example.com" disabled>
+                        <input type="email" class="form-control" id="email" value="{{data['email']}}" disabled>
                     </div>
                     <div class="mb-3">
-                        <label for="email" class="form-label">Phone Number</label>
-                        <input type="number" class="form-control" id="phone_no" value="090221223" disabled>
+                        <label for="phone_no" class="form-label">Phone Number</label>
+                        <input type="text" class="form-control" id="phone_no" value="{{data['phone_number']}}" disabled>
                     </div>
                     <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="isTenant" checked disabled>
-                        <label class="form-check-label" for="isTenant">Tenant</label>
+                        <input type="checkbox" class="form-check-input" id="isTenant" {% if data["landlord"] %} checked {% else %} unchecked {% endif %} disabled>
+                        <label class="form-check-label" for="isTenant">Landlord</label>
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label">Password</label>
