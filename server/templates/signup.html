@@ -100,28 +100,32 @@
                 <div class="card shadow">
                     <div class="card-body p-5">
                         <h2 class="text-center mb-4" style="color: #33ccff;">SIGN UP</h2>
-                        <form>
+                        <form action="signup", method="post">
                             <div class="mb-3">
                                 <label for="firstname" class="form-label" style="color: #33ccff;">First Name</label>
-                                <input type="text" class="form-control" id="firstname" placeholder="First Name" required>
+                                <input type="text" class="form-control" id="firstname" name="firstname" placeholder="First Name" required>
                             </div>
                             <div class="mb-3">
                                 <label for="lastname" class="form-label" style="color: #33ccff;">Last Name</label>
-                                <input type="text" class="form-control" id="lastname" placeholder="Last Name" required>
+                                <input type="text" class="form-control" id="lastname" name="lastname" placeholder="Last Name" required>
                             </div>
                             <div class="mb-3">
                                 <label for="email" class="form-label" style="color: #33ccff;">Email</label>
-                                <input type="email" class="form-control" id="email" placeholder="Email Address" required>
+                                <input type="email" class="form-control" id="email" name="email" placeholder="Email Address" required>
                             </div>
                             <div class="mb-3">
                                 <label for="phone" class="form-label" style="color: #33ccff;">Phone Number</label>
-                                <input type="tel" class="form-control" id="phone" placeholder="Phone Number" required>
+                                <input type="tel" class="form-control" id="phone" name="phone" placeholder="Phone Number" required>
                             </div>
                             <div class="mb-3 position-relative">
                                 <label for="password" class="form-label">Password</label>
                                 <input type="password" id="password" name="password" class="form-control" required>
                                 <i class="far fa-eye-slash toggle-password" style="cursor: pointer; position: absolute; right: 10px; top: 36px;"></i>
-                              </div>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="landlord" name="landlord">
+                                <label class="form-check-label" for="landlord">I am a landlord</label>
+                            </div>
                             <div class="d-grid">
                                 <button type="submit" class="btn btn-primary btn-signup">Sign Up</button>
                             </div>

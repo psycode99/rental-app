@@ -15,9 +15,9 @@ from typing import Optional
 router = APIRouter(prefix='/v1/uploads', tags=['Uploads'])
 
 
-UPLOAD_FOLDER = Path('api/static/property_uploads')
-TENANT_APPLICATIONS = Path('api/static/tenant_applications')
-PROFILE_PIC_UPLOAD_DIR = Path("api/static/profile_pics")
+UPLOAD_FOLDER = Path('static/property_uploads')
+TENANT_APPLICATIONS = Path('static/tenant_applications')
+PROFILE_PIC_UPLOAD_DIR = Path("static/profile_pics")
 
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}

@@ -131,6 +131,9 @@
             margin-bottom: 4rem; /* Add spacing below text */
         }
 
+        a{
+            text-decoration: none;
+        }
         @media (max-width: 767px) {
             .navbar-brand {
                 font-size: 1.2rem;
@@ -174,15 +177,17 @@
 
     <div class="profile-pic-container">
         <div class="upload-text">Upload Profile Picture</div>
+        <form method="post" enctype="multipart/form-data">
         <div class="profile-pic">
             <img id="profilePicture" src="https://via.placeholder.com/200" alt="Profile Picture">
-            <input type="file" id="fileInput" accept="image/*" onchange="previewImage()">
+            <input type="file" id="fileInput" accept="image/*" name="profile_pic" onchange="previewImage()">
             <label for="fileInput" class="profile-pic-label"> Profile Picture</label>
         </div>
         <div class="btn-group">
-            <button class="btn btn-signup"><i class="fas fa-upload"></i>Sign Up</button>
+            <a href="{{url_for('profile_pic')}}"><button class="btn btn-signup"><i class="fas fa-upload"></i>Sign Up</button></a>
             <button class="btn btn-skip"><i class="fas fa-arrow-right"></i>Skip</button>
         </div>
+    </form>
     </div>
 
     <script>

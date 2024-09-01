@@ -3,6 +3,9 @@ import requests
 
 
 app = Flask(__name__)
+app.secret_key = "qwerty"
+host = "http://localhost:8000"
+
 
 @app.route('/', methods=['POST','GET'])
 def home():
@@ -16,7 +19,101 @@ def login():
 
 @app.route('/signup', methods=['POST', "GET"])
 def signup():
+    if request.method == "POST":
+        user_data =   {
+        "first_name": request.form.get("firstname"),
+        "last_name": request.form.get("lastname"),
+        "email": request.form.get("email"),
+        "phone_number": request.form.get("phone"),
+        "landlord": bool(request.form.get('landlord')),
+        "password": request.form.get("password"),
+        "profile_pic": "null"
+    }
+        res = requests.post(f'{host}/v1/users/', json=user_data )
+        if res.status_code == 201:
+            print("-----------------SIGNUP DEBUG----------------------")
+            print(res.json().get('password'))
+            session['user_id'] = res.json().get('id')
+            session['first_name'] = res.json().get('first_name')
+            session['last_name'] = res.json().get('last_name')
+            session['email'] = res.json().get('email')
+            session['phone_number'] = res.json().get('phone_number')
+            session['landlord'] = res.json().get('landlord')
+            session['password'] = user_data['password']
+            print(session['password'])
+            session['profile_pic'] = res.json().get('profile_pic')
+            return redirect(url_for('profile_pic'))
+        else:
+            return {
+                "status_code": str(res.status_code),
+                "detail": str(res.json().get('detail'))
+            }
     return render_template("signup.html")
+
+
+@app.route('/signup_profile_pic', methods=['POST', "GET"])
+def profile_pic():
+    if request.method == "POST":
+        file = request.files['profile_pic']
+
+        # Check if the file is selected
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+
+        if file:
+
+            # Prepare the file to be sent to the FastAPI endpoint
+            files = {'file': (file.filename, file.stream, file.mimetype)}
+
+            try:
+                # Send the file to the FastAPI endpoint
+                response = requests.post(f"{host}/v1/uploads/upload_profile_pic", files=files)
+
+                # Handle the response from FastAPI
+                if response.status_code == 200:
+                    data = response.json()
+                    filename = data.get('filename')
+                    signup_data = {
+                        "first_name": session['first_name'],
+                        "last_name": session['last_name'],
+                        "email": session['email'],
+                        "phone_number": str(session['phone_number']),
+                        "landlord": session['landlord'],
+                        "password": session['password'],
+                        "profile_pic": session['profile_pic']
+                    }
+                    user_id = session['user_id']
+                    print("----------------------------DEBUG____________")
+                    print(session['email'])
+                    print(session['password'])
+                    print(session['landlord'])
+                    login = requests.post(f"{host}/v1/auth/login", data={"username":signup_data['email'], "password":signup_data['password']})
+                    if login.status_code == 200:
+                        access_token = login.json().get("access_token")
+                        headers = {
+                        'Authorization': f'Bearer {access_token}',
+                        "Content-Type": "application/json"
+                        }
+                        signup_data['profile_pic'] = filename
+                        print(signup_data['profile_pic'])
+                        update_res = requests.put(f"{host}/v1/users/{user_id}", headers=headers, json=signup_data )
+                        print(update_res.json())
+                        if update_res.status_code == 200:
+                            return redirect(url_for('login'))
+                        else:
+                            return "image update failed"
+                    else:
+                        return "Login failed"
+                else:
+                    flash(f"Failed to upload file. Status code: {response.status_code}, Detail: {response.json().get('detail')}")
+                    return redirect(request.url)
+
+            except requests.exceptions.RequestException as e:
+                flash(f"An error occurred: {e}")
+                return redirect(request.url)
+                
+    return render_template('profile_pic.html')
 
 
 @app.route('/property', methods=['POST', 'GET'])
