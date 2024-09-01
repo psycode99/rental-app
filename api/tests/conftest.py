@@ -6,8 +6,9 @@ from sqlalchemy.orm import sessionmaker
 from ..app.database import get_db, Base
 from ..app.oauth import create_access_token
 import pytest
+from ..app.config import settings
 
-DATABASE_URL = f"postgresql://postgres:wordpress@localhost:5432/rental-mgt_test"
+DATABASE_URL = f'postgresql://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}_test'
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 TestSessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, expire_on_commit=False)
