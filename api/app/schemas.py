@@ -32,6 +32,7 @@ class UserCreate(BaseModel):
     password: str
     landlord: bool = False
     profile_pic: Optional[str] = None
+
     
 
 class UserResp(BaseModel):
@@ -44,6 +45,7 @@ class UserResp(BaseModel):
     phone_number: str
     created_at: datetime
     landlord: bool
+    password: str
     profile_pic: Optional[str] = None
 
     # class Config:

@@ -160,9 +160,58 @@ def profile_pic():
 @app.route('/change_profile_pic', methods=['POST', 'GET'])
 def change_profile_pic():
     token = request.cookies.get('access_token')
-    logged_in = None
+    print(token)
     if token and verify_token(token):
-        
+        print("in")
+        token_verification = verify_token(token)
+        if request.method == "POST":
+            print("post")
+            file = request.files['profile_pic']
+
+            # Check if the file is selected
+            if file.filename == '':
+                flash('No selected file')
+                return redirect(request.url)
+
+            if file:
+
+                # Prepare the file to be sent to the FastAPI endpoint
+                files = {'file': (file.filename, file.stream, file.mimetype)}
+
+                try:
+                    # Send the file to the FastAPI endpoint
+                    response = requests.post(f"{host}/v1/uploads/upload_profile_pic", files=files)
+                    if response.status_code == 200:
+                        if token_verification['landlord']:
+                            res = requests.get(f"{host}/v1/users/landlords/{token_verification['user_id']}")
+                            data = res.json()
+                        else:
+                            res = requests.get(f"{host}/v1/users/tenants/{token_verification['user_id']}")
+                            data = res.json()
+                        data['profile_pic'] = response.json().get('filename')
+                        del data['id']
+                        del data['created_at']
+                        del data['property']
+                        headers = {
+                            'Authorization': f'Bearer {token}',
+                            "Content-Type": "application/json"
+                            }
+                        print(data)
+                        res = requests.put(f"{host}/v1/users/{token_verification['user_id']}",  headers=headers, json=data)
+                        if res.status_code == 200:
+                            return redirect(url_for('home'))
+                        else:
+                            return "image update failed"
+                    else:
+                        return "image uplaod failed"
+                except requests.exceptions.RequestException as e:
+                    flash(f"An error occurred: {e}")
+                    return redirect(request.url)
+    else:
+        return "unauthorized"
+    print("out")
+    return redirect(url_for('home'))
+                
 
 @app.route('/property', methods=['POST', 'GET'])
 def property():

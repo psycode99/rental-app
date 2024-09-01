@@ -693,11 +693,12 @@
 
 
     <!---- Profile Modal ----->
+    {% if logged_in %}
     <div class="modal fade" id="userDetailsModal" tabindex="-1" aria-labelledby="userDetailsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-body">
-                    <form action="change_profile_pic" method="POST" enctype="multipart/form-data">
+                    <form action="change_profile_pic" method="post" enctype="multipart/form-data">
                         <div class="d-flex justify-content-center mb-4">
                             <div class="profile-pic-container">
                                 <input type="file" id="profilePicInput" name="profile_pic" class="profile-pic-input" accept="image/*">
@@ -708,7 +709,7 @@
                                         <span>Change</span>
                                     </div>
                                 </label>
-                                <a href="#" class="change-btn">Save</a>
+                                <button type="submit" class="change-btn">Save</button>
                             </div>
                         </div>
                     </form>
@@ -744,9 +745,12 @@
             </div>
         </div>
     </div>
+    {%  else %}
+    <div></div>
+    {% endif %}
 
     
-
+    {%  if logged_in %}
     <div class="bottom-nav">
         <a class="nav-link" href="#">
             <i class="fas fa-home"></i>
@@ -765,6 +769,7 @@
             Profile
         </a>
     </div>
+    {% endif %}
     </div>
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
