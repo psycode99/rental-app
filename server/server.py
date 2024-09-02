@@ -1,11 +1,33 @@
 from flask import *
 import requests
 import jwt
+from functools import wraps
 
 app = Flask(__name__)
 app.secret_key = "qwerty"
 host = "http://localhost:8000"
 SECRET_KEY = "Q4epX5pDd_kjTbvRZ-8tLrXjFskv45pXyswhv48H8oM"
+
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.cookies.get('access_token')
+        if not token:
+            return redirect(url_for('login'))
+        
+        try:
+            # Decode the token to verify its validity
+            jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        except jwt.ExpiredSignatureError:
+            return redirect(url_for('login'))  # Token expired, redirect to login
+        except jwt.InvalidTokenError:
+            return jsonify({"message": "Invalid token"}), 401
+        
+        return f(*args, **kwargs)
+    
+    return decorated
+
 
 def verify_token(token):
     try:
@@ -75,8 +97,6 @@ def signup():
     }
         res = requests.post(f'{host}/v1/users/', json=user_data )
         if res.status_code == 201:
-            print("-----------------SIGNUP DEBUG----------------------")
-            print(res.json().get('password'))
             session['user_id'] = res.json().get('id')
             session['first_name'] = res.json().get('first_name')
             session['last_name'] = res.json().get('last_name')
@@ -84,7 +104,6 @@ def signup():
             session['phone_number'] = res.json().get('phone_number')
             session['landlord'] = res.json().get('landlord')
             session['password'] = user_data['password']
-            print(session['password'])
             session['profile_pic'] = res.json().get('profile_pic')
             return redirect(url_for('profile_pic'))
         else:
@@ -128,6 +147,7 @@ def profile_pic():
                         "profile_pic": session['profile_pic']
                     }
                     user_id = session['user_id']
+                    session['img_path'] = f"http://localhost:8000/static/profile_pics/{filename}"
                     login = requests.post(f"{host}/v1/auth/login", data={"username":signup_data['email'], "password":signup_data['password']})
                     if login.status_code == 200:
                         access_token = login.json().get("access_token")
@@ -136,7 +156,6 @@ def profile_pic():
                         "Content-Type": "application/json"
                         }
                         signup_data['profile_pic'] = filename
-                        print(signup_data['profile_pic'])
                         update_res = requests.put(f"{host}/v1/users/{user_id}", headers=headers, json=signup_data )
                         print(update_res.json())
                         if update_res.status_code == 200:
@@ -156,16 +175,14 @@ def profile_pic():
     return render_template('profile_pic.html')
 
 
-
 @app.route('/change_profile_pic', methods=['POST', 'GET'])
 def change_profile_pic():
     token = request.cookies.get('access_token')
     print(token)
     if token and verify_token(token):
-        print("in")
+      
         token_verification = verify_token(token)
         if request.method == "POST":
-            print("post")
             file = request.files['profile_pic']
 
             # Check if the file is selected
@@ -182,13 +199,16 @@ def change_profile_pic():
                     # Send the file to the FastAPI endpoint
                     response = requests.post(f"{host}/v1/uploads/upload_profile_pic", files=files)
                     if response.status_code == 200:
+                        filename = response.json().get('filename')
+                        session['img_path'] = f"http://localhost:8000/static/profile_pics/{filename}"
                         if token_verification['landlord']:
                             res = requests.get(f"{host}/v1/users/landlords/{token_verification['user_id']}")
                             data = res.json()
                         else:
                             res = requests.get(f"{host}/v1/users/tenants/{token_verification['user_id']}")
                             data = res.json()
-                        data['profile_pic'] = response.json().get('filename')
+                        data['profile_pic'] = filename
+                        data['password'] = session['password']
                         del data['id']
                         del data['created_at']
                         del data['property']
@@ -209,7 +229,7 @@ def change_profile_pic():
                     return redirect(request.url)
     else:
         return "unauthorized"
-    print("out")
+ 
     return redirect(url_for('home'))
                 
 
@@ -224,13 +244,118 @@ def search():
 
 
 @app.route('/dashboard', methods=["POST", "GET"])
+@token_required
 def dashboard():
-    return render_template("dashboard.html")
+    token = request.cookies.get('access_token')
+    logged_in = None
+    if token and verify_token(token):
+        token_verification = verify_token(token)
+        if token_verification['landlord']:
+            res = requests.get(f"{host}/v1/users/landlords/{token_verification['user_id']}")
+            data = res.json()
+            data['img_path'] = "http://localhost:8000/static/profile_pics/"
+        else:
+            res = requests.get(f"{host}/v1/users/tenants/{token_verification['user_id']}")
+            data = res.json()
+            data['img_path'] = "http://localhost:8000/static/profile_pics/"
+        logged_in = True
+
+    return render_template("dashboard.html", logged_in=logged_in, data=data)
+
+
+@app.route('/add_property_img', methods=['POST', "GET"])
+@token_required
+def add_property_img():
+    if request.method == "POST":
+        image1 = request.files.get("image1")
+        image2 = request.files.get("image2")
+        image3 = request.files.get("image3")
+
+         # Prepare the files to send to FastAPI
+        files = []
+        if image1:
+            files.append(('files', (image1.filename, image1.stream, image1.mimetype)))
+        if image2:
+            files.append(('files', (image2.filename, image2.stream, image2.mimetype)))
+        if image3:
+            files.append(('files', (image3.filename, image3.stream, image3.mimetype)))
+
+        # Send the files to the FastAPI endpoint
+        try:
+            response = requests.post(f'{host}/v1/uploads/upload_imgs', files=files)
+            
+            # Check if the request was successful
+            if response.status_code == 200:
+                filenames = {"files": response.json().get('filenames')}
+                session['img_files'] = filenames
+                print(filenames)
+                return redirect(url_for('add_property'))
+            else:
+                return f"Failed to upload images: {response.status_code} - {response.text}"
+
+        except requests.exceptions.RequestException as e:
+            flash(f"An error occurred: {e}")
+            return redirect(url_for('upload_images'))
+    return render_template('add_prop_img.html')
 
 
 @app.route('/add_property', methods=['POST', "GET"])
+@token_required
 def add_property():
-    return render_template('add_prop_img.html')
+    filenames = session.get('img_files')['files']
+    print(filenames)
+    profile_pic = session['img_path']
+    token = request.cookies.get('access_token')
+    if token and verify_token(token):
+        token_verification = verify_token(token)
+        if token_verification['landlord']:
+             res = requests.get(f"{host}/v1/users/landlords/{token_verification['user_id']}")
+             data = res.json()
+             
+    if request.method == "POST":
+        address = request.form.get("address")
+        bedrooms = request.form.get("bedrooms")
+        bathrooms = request.form.get("bathrooms")
+        sqft = request.form.get("sqft")
+        price = request.form.get('price')
+        city = request.form.get('city')
+        state = request.form.get("state")
+        description = request.form.get("description")
+        status = request.form.get("status")
+        file_1 = filenames[0]
+        file_2 = filenames[1]
+        file_3 = filenames[2]
+
+        property_data = {
+            "address": address,
+            "bedrooms": bedrooms,
+            "bathrooms": bathrooms,
+            "sqft": sqft,
+            "price": price,
+            "city": city,
+            "state": state,
+            "description": description,
+            "landlord_id": token_verification['user_id'],
+            "status": status,
+            "file_1": file_1,
+            "file_2": file_2,
+            "file_3": file_3
+        }
+
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
+
+        res = requests.post(f"{host}/v1/properties", headers=headers, json=property_data)
+        if res.status_code == 201:
+            session.pop("img_files", None)
+            return redirect(url_for('dashboard'))
+        else:
+            return res.status_code
+
+    return render_template("add_property.html", profile_pic=profile_pic, data=data)
+
 
 
 @app.route('/make_booking', methods=['POST', "GET"])

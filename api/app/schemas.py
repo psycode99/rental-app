@@ -10,7 +10,7 @@ class Property(BaseModel):
     state: str
     bedrooms: int
     bathrooms: float
-    sqft: int
+    sqft: Optional[int] = None
     description: str
     price: float
     landlord_id: int
@@ -45,7 +45,6 @@ class UserResp(BaseModel):
     phone_number: str
     created_at: datetime
     landlord: bool
-    password: str
     profile_pic: Optional[str] = None
 
     # class Config:
