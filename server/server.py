@@ -2,6 +2,9 @@ from flask import *
 import requests
 import jwt
 from functools import wraps
+import humanize
+from datetime import datetime
+import pytz
 
 app = Flask(__name__)
 app.secret_key = "qwerty"
@@ -44,6 +47,51 @@ def verify_token(token):
 def home():
     token = request.cookies.get('access_token')
     logged_in = None
+
+    page = request.args.get('page')
+    size = request.args.get('size')
+    if page == None or size == None:
+        page = 1
+        size = 1
+        
+    properties = requests.get(f'{host}/v1/properties/?page={page}&size={size}')
+    if properties.status_code == 200:
+        properties_json = properties.json()
+        for prop in properties_json['items']:
+            price = prop['price']
+            bathrooms = prop['bathrooms']
+            if price.is_integer():
+                price = int(price)
+            
+            if bathrooms.is_integer():
+                bathrooms = int(bathrooms)
+
+            humanized_price = humanize.intcomma(price)
+            prop['bathrooms'] = bathrooms
+            prop['price'] = humanized_price
+            # Assume data contains a 'timestamp' field in string format
+            timestamp_str = prop['created_at']
+            
+            # Convert the string to a datetime object
+            timestamp = datetime.fromisoformat(timestamp_str)
+            
+            # Optionally localize to a specific timezone if needed
+            timestamp = timestamp.astimezone(pytz.timezone("Africa/Lagos"))
+
+            # # Format the datetime as needed, e.g., 'Sep 2, 2024, 5:08 AM'
+            # formatted_time = timestamp.strftime('%b %d, %Y, %I:%M %p')
+            
+            # Alternatively, you can use humanize to make it more natural, like "2 days ago"
+            humanized_time = humanize.naturaltime(timestamp)
+            prop['created_at'] = humanized_time
+            total = properties_json['total']
+            current_page = properties_json['page']
+            size = properties_json['size']
+            total_pages = properties_json['pages']
+    else:
+        return {
+            "status_code": str(properties.status_code)
+        }
     if token and verify_token(token):
          token_verification = verify_token(token)
          if token_verification['landlord']:
@@ -55,11 +103,26 @@ def home():
             data = res.json()
             data['img_path'] = "http://localhost:8000/static/profile_pics/"
          logged_in = True
-         return render_template("home.html", logged_in=logged_in, data=data)
+         return render_template("home.html",
+                                logged_in=logged_in,
+                                data=data,
+                                properties=properties_json,
+                                total=total,
+                                page=current_page,
+                                size=size,
+                                total_pages=total_pages
+                                )
 
     else:
          logged_in = False
-         return render_template("home.html", logged_in=logged_in)
+         return render_template("home.html",
+                                 logged_in=logged_in, 
+                                 properties=properties_json, 
+                                 total=total,
+                                 page=current_page,
+                                 size=size,
+                                 total_pages=total_pages
+                                 )
 
    
 @app.route('/login', methods=['POST', "GET"])
@@ -71,7 +134,7 @@ def login():
         res = requests.post(f"{host}/v1/auth/login", data={"username":email, "password":password})
         if res.status_code == 200:
             access_code = res.json().get('access_token')
-            response =  redirect(url_for('home'))
+            response =  redirect(url_for('home', page=1, size=1))
             response.set_cookie('access_token', access_code)
             return response
         else:
@@ -280,6 +343,9 @@ def add_property_img():
         if image3:
             files.append(('files', (image3.filename, image3.stream, image3.mimetype)))
 
+        if len(files) < 3:
+            return "one or more of the required files is missing"
+
         # Send the files to the FastAPI endpoint
         try:
             response = requests.post(f'{host}/v1/uploads/upload_imgs', files=files)
@@ -313,18 +379,24 @@ def add_property():
              data = res.json()
              
     if request.method == "POST":
-        address = request.form.get("address")
+        address = request.form.get("address").title()
         bedrooms = request.form.get("bedrooms")
         bathrooms = request.form.get("bathrooms")
         sqft = request.form.get("sqft")
         price = request.form.get('price')
-        city = request.form.get('city')
-        state = request.form.get("state")
+        city = request.form.get('city').title()
+        state = request.form.get("state").title()
         description = request.form.get("description")
         status = request.form.get("status")
-        file_1 = filenames[0]
-        file_2 = filenames[1]
-        file_3 = filenames[2]
+        file_1 = filenames[0] if len(filenames) > 0 else None
+        file_2 = filenames[1] if len(filenames) > 1 else None
+        file_3 = filenames[2] if len(filenames) > 2 else None
+
+        if sqft == "":
+            sqft = None
+        
+        if not file_1 or not file_2 or not file_3:
+            return "At least one of the required images is missing"
 
         property_data = {
             "address": address,
@@ -352,10 +424,9 @@ def add_property():
             session.pop("img_files", None)
             return redirect(url_for('dashboard'))
         else:
-            return res.status_code
+            return {"status_code": str(res.status_code), "detail": str(res.json().get('detail'))}
 
     return render_template("add_property.html", profile_pic=profile_pic, data=data)
-
 
 
 @app.route('/make_booking', methods=['POST', "GET"])

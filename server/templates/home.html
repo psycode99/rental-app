@@ -9,6 +9,7 @@
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <style>
         body, .navbar-brand, .nav-link, .btn-logout, .hero, .search-bar, .card, .property-details, .property-features .feature, .bottom-nav .nav-link {
             font-family: 'Montserrat', sans-serif;
@@ -18,6 +19,10 @@
             border-radius: 25px;
             padding: 10px 20px;
             margin-bottom: 20px;
+        }
+
+        .active{
+            background-color: #33ccff;
         }
         .navbar-brand {
             font-size: 24px;
@@ -234,6 +239,27 @@
 
         .profile-pic-overlay i {
             margin-right: 0.25rem;
+        }
+
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .pagination {
+            justify-content: center;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: #33ccff;
+            border-color: #33ccff;
+            color: #fff; /* Optional: Adjust text color for contrast */
+        }
+
+        .pagination .page-item .page-link {
+            border-radius: 1px; 
+            color:#33ccff;
         }
 
         .change-btn {
@@ -495,7 +521,7 @@
                 <div class="col-lg-8">
                     <div class="search-bar">
                         <h3 class="text-center mb-4" style="color: #33ccff;">Find Your New Home</h3>
-                        <form>
+                        <form action="search" method="post">
                             <div class="row">
                                 <div class="col-md-4 mb-3">
                                     <select class="form-control" id="state">
@@ -549,7 +575,7 @@
                                     <input type="number" class="form-control" placeholder="Number of Bathrooms" min="1">
                                 </div>
                                 <div class="col-md-4 mb-3">
-                                    <input type="text" class="form-control" placeholder="Price Range (e.g. $500 - $1500)">
+                                    <input type="text" class="form-control" placeholder="Price Range (e.g. ₦50000 - ₦150000)">
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <select class="form-control" id="property-status">
@@ -573,88 +599,37 @@
     
     <div class="container my-5">
         <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for property in properties['items'] %}
             <div class="col">
                 <div class="card">
                     <div class="card-img-top position-relative">
-                        <a href="#">
-                            <img src="https://via.placeholder.com/300x200" alt="Property Image" class="w-100">
-                            <span class="price-badge">$1200/mo</span>
+                        <a href="{{url_for('property', id=property.id)}}">
+                            <img src="http://localhost:8000/static/property_uploads/{{ property.file_1 }}" alt="Property Image" class="w-100">
+                            <span class="price-badge price">₦{{property.price}}/yr</span>
                             <!-- <i class="heart-icon fas fa-heart"></i> Heart Icon -->
                         </a>
                     </div>
                     <div class="property-details">
-                        <h5>123 Main St, Springfield</h5>
+                        <h5>{{ property.address }}, {{ property.city }}, {{ property.state }}</h5>
                         <div class="property-features">
                             <div class="feature">
-                                <i class="fas fa-bed"></i> 3 Bedrooms
+                                <i class="fas fa-bed"></i> {{property.bedrooms}} Bedrooms
                             </div>
                             <div class="feature">
-                                <i class="fas fa-bath"></i> 2 Bathrooms
+                                <i class="fas fa-bath"></i> {{property.bathrooms}} Bathrooms
                             </div>
                             <div class="feature">
-                                <i class="fas fa-ruler-combined"></i> 1200 sqft
+                                <i class="fas fa-tag"></i> {{property.status}}
                             </div>
                             <div class="feature">
-                                <i class="fas fa-tag"></i> For Rent
+                                <i class="fas fa-clock"></i> {{property.created_at}} 
                             </div>
+                            
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col">
-                <div class="card">
-                    <div class="card-img-top position-relative">
-                        <a href="#">
-                            <img src="https://via.placeholder.com/300x200" alt="Property Image" class="w-100">
-                            <span class="price-badge">$1200/mo</span>
-                            <!-- <i class="heart-icon fas fa-heart"></i> Heart Icon -->
-                        </a>
-                    </div>
-                    <div class="property-details">
-                        <h5>123 Main St, Springfield</h5>
-                        <div class="property-features">
-                            <div class="feature">
-                                <i class="fas fa-bed"></i> 3 Bedrooms
-                            </div>
-                            <div class="feature">
-                                <i class="fas fa-bath"></i> 2 Bathrooms
-                            </div>
-                            <div class="feature">
-                                <i class="fas fa-ruler-combined"></i> 1200 sqft
-                            </div>
-                            <div class="feature">
-                                <i class="fas fa-tag"></i> For Rent
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="card">
-                    <div class="card-img-top position-relative">
-                        <a href="#">
-                            <img src="https://via.placeholder.com/300x200" alt="Property Image" class="w-100">
-                            <span class="price-badge">$1200/mo</span>
-                            <!-- <i class="heart-icon fas fa-heart"></i> Heart Icon -->
-                        </a>
-                    </div>
-                    <div class="property-details">
-                        <h5>123 Main St, Springfield</h5>
-                        <div class="property-features">
-                            <div class="feature">
-                                <i class="fas fa-bed"></i> 3 Bedrooms
-                            </div>
-                            <div class="feature">
-                                <i class="fas fa-bath"></i> 2 Bathrooms
-                            </div>
-                            <div class="feature">
-                                <i class="fas fa-ruler-combined"></i> 1200 sqft
-                            </div>
-                            <div class="feature">
-                                <i class="fas fa-tag"></i> For Rent
-                            </div>
-                        </div>
-                    </div>
+            {% endfor %}
                 </div>
             </div>
             <!-- Repeat for other properties -->
@@ -770,6 +745,52 @@
         </a>
     </div>
     {% endif %}
+</div>
+    
+<div class="pagination_container">
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if page > 1 %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page - 1 }}&size={{ size }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            {% endif %}
+
+            {% for p in range(1, total_pages + 1) %}
+                {% if p == page %}
+                    <li class="page-item active">
+                        <a class="page-link">{{ p }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ p }}&size={{ size }}">{{ p }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page < total_pages %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page + 1 }}&size={{ size }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
     </div>
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
@@ -809,7 +830,6 @@
 </footer>
 
 
-
 <script>
 
         // JavaScript code to handle profile picture upload
@@ -835,6 +855,9 @@
             icon.classList.toggle('fa-eye-slash');
             icon.classList.toggle('fa-eye');
         });
+
+        
+    
 </script>
 
 
