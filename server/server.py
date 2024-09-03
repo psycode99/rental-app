@@ -9,6 +9,9 @@ import pytz
 app = Flask(__name__)
 app.secret_key = "qwerty"
 host = "http://localhost:8000"
+profile_pic_dir = f"{host}/static/profile_pics/"
+tenant_applications_dir = f"{host}/static/tenant_applications/"
+property_uploads_dir = f"{host}/static/property_uploads/"
 SECRET_KEY = "Q4epX5pDd_kjTbvRZ-8tLrXjFskv45pXyswhv48H8oM"
 
 
@@ -53,10 +56,11 @@ def home():
     if page == None or size == None:
         page = 1
         size = 1
-        
+
     properties = requests.get(f'{host}/v1/properties/?page={page}&size={size}')
     if properties.status_code == 200:
         properties_json = properties.json()
+        properties_json['property_imgs'] = property_uploads_dir
         for prop in properties_json['items']:
             price = prop['price']
             bathrooms = prop['bathrooms']
@@ -97,11 +101,11 @@ def home():
          if token_verification['landlord']:
              res = requests.get(f"{host}/v1/users/landlords/{token_verification['user_id']}")
              data = res.json()
-             data['img_path'] = "http://localhost:8000/static/profile_pics/"
+             data['img_path'] = profile_pic_dir
          else:
             res = requests.get(f"{host}/v1/users/tenants/{token_verification['user_id']}")
             data = res.json()
-            data['img_path'] = "http://localhost:8000/static/profile_pics/"
+            data['img_path'] = profile_pic_dir
          logged_in = True
          return render_template("home.html",
                                 logged_in=logged_in,
@@ -134,8 +138,25 @@ def login():
         res = requests.post(f"{host}/v1/auth/login", data={"username":email, "password":password})
         if res.status_code == 200:
             access_code = res.json().get('access_token')
-            response =  redirect(url_for('home', page=1, size=1))
+            response =  redirect(url_for('home'))
             response.set_cookie('access_token', access_code)
+            verified_access_code = verify_token(access_code)
+
+            if verified_access_code['landlord']:
+                user = requests.get(f"{host}/v1/users/landlords/{verified_access_code['user_id']}")
+            else:
+                user =  requests.get(f"{host}/v1/users/tenants/{verified_access_code['user_id']}")
+            user_data = user.json()
+            session['user_id'] = user_data['id']
+            session['first_name'] = user_data['first_name']
+            session['last_name'] = user_data['last_name']
+            session['email'] = user_data['email']
+            session['phone_number'] = user_data["phone_number"]
+            session['landlord'] = user_data["landlord"]
+            # session['password'] = user_data['password']
+            session['profile_pic'] = user_data["profile_pic"]
+            session['profile_pic_path'] = profile_pic_dir
+            
             return response
         else:
             return {
@@ -210,7 +231,7 @@ def profile_pic():
                         "profile_pic": session['profile_pic']
                     }
                     user_id = session['user_id']
-                    session['img_path'] = f"http://localhost:8000/static/profile_pics/{filename}"
+                    session['profile_pic_path'] = f"{profile_pic_dir}{filename}"
                     login = requests.post(f"{host}/v1/auth/login", data={"username":signup_data['email'], "password":signup_data['password']})
                     if login.status_code == 200:
                         access_token = login.json().get("access_token")
@@ -222,6 +243,8 @@ def profile_pic():
                         update_res = requests.put(f"{host}/v1/users/{user_id}", headers=headers, json=signup_data )
                         print(update_res.json())
                         if update_res.status_code == 200:
+                            session['profile_pic_path'] = f"{profile_pic_dir}{filename}"
+                            session.pop("password")
                             return redirect(url_for('login'))
                         else:
                             return "image update failed"
@@ -263,7 +286,7 @@ def change_profile_pic():
                     response = requests.post(f"{host}/v1/uploads/upload_profile_pic", files=files)
                     if response.status_code == 200:
                         filename = response.json().get('filename')
-                        session['img_path'] = f"http://localhost:8000/static/profile_pics/{filename}"
+                        
                         if token_verification['landlord']:
                             res = requests.get(f"{host}/v1/users/landlords/{token_verification['user_id']}")
                             data = res.json()
@@ -282,6 +305,7 @@ def change_profile_pic():
                         print(data)
                         res = requests.put(f"{host}/v1/users/{token_verification['user_id']}",  headers=headers, json=data)
                         if res.status_code == 200:
+                            session['profile_pic_path'] = f"{profile_pic_dir}{filename}"
                             return redirect(url_for('home'))
                         else:
                             return "image update failed"
@@ -298,8 +322,63 @@ def change_profile_pic():
 
 @app.route('/property', methods=['POST', 'GET'])
 def property():
-    return render_template("property.html")
+    property_id = request.args.get("id")
+    res = requests.get(f"{host}/v1/properties/{property_id}")
+    if res.status_code == 200:
+            property_data = res.json()
 
+            price = property_data['price']
+            if price.is_integer():
+                price = int(price)
+            
+            bathrooms = property_data['bathrooms']
+            if bathrooms.is_integer():
+                bathrooms = int(bathrooms)
+
+            humanized_price = humanize.intcomma(price)
+            property_data['bathrooms'] = bathrooms
+            property_data['price'] = humanized_price
+
+            property_data['property_imgs'] = property_uploads_dir
+            property_data['img_path'] = profile_pic_dir
+
+            landlord_res = requests.get(f"{host}/v1/users/landlords/{property_data['landlord_id']}")
+            if landlord_res.status_code == 200:
+                landlord_data = landlord_res.json()
+            else:
+                return {
+            "status_code": str(res.status_code),
+            "text": str(res.text)
+        }
+
+    else:
+        return {
+            "status_code": str(res.status_code),
+            "text": str(res.text)
+        }
+    logged_in = None
+    token = request.cookies.get('access_token')
+    if token and verify_token(token):
+        user_profile_pic = session['profile_pic']
+        property_data['profile_pic'] =f"{session['profile_pic_path']}{user_profile_pic}" 
+        logged_in = True
+        user_data = {
+            "first_name": session['first_name'],
+            "last_name": session['last_name'],
+            "email": session['email'],
+            "phone_number": session['phone_number'],
+            "landlord": session['landlord'],  # Assuming 'landlord' is stored as a boolean in the session
+            "profile_pic": session['profile_pic']  # Defaults to 'null' if 'profile_pic' is not in session
+        }
+        property_data['user_data'] = user_data
+        
+    else:
+        logged_in = False
+    return render_template("property.html",
+                           data=property_data,
+                            logged_in=logged_in,
+                            landlord_data=landlord_data)
+        
 
 @app.route('/search', methods=['POST', 'GET'])
 def search():
@@ -316,11 +395,11 @@ def dashboard():
         if token_verification['landlord']:
             res = requests.get(f"{host}/v1/users/landlords/{token_verification['user_id']}")
             data = res.json()
-            data['img_path'] = "http://localhost:8000/static/profile_pics/"
+            data['img_path'] = profile_pic_dir
         else:
             res = requests.get(f"{host}/v1/users/tenants/{token_verification['user_id']}")
             data = res.json()
-            data['img_path'] = "http://localhost:8000/static/profile_pics/"
+            data['img_path'] = profile_pic_dir
         logged_in = True
 
     return render_template("dashboard.html", logged_in=logged_in, data=data)
@@ -369,8 +448,6 @@ def add_property_img():
 @token_required
 def add_property():
     filenames = session.get('img_files')['files']
-    print(filenames)
-    profile_pic = session['img_path']
     token = request.cookies.get('access_token')
     if token and verify_token(token):
         token_verification = verify_token(token)
@@ -426,7 +503,7 @@ def add_property():
         else:
             return {"status_code": str(res.status_code), "detail": str(res.json().get('detail'))}
 
-    return render_template("add_property.html", profile_pic=profile_pic, data=data)
+    return render_template("add_property.html", data=data)
 
 
 @app.route('/make_booking', methods=['POST', "GET"])

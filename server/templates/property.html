@@ -325,7 +325,7 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Home</a>
+                            <a class="nav-link" href="{{url_for('home')}}">Home</a>
                         </li>
                         <!-- <li class="nav-item">
                             <a class="nav-link" href="#">Dashboard</a>
@@ -336,18 +336,22 @@
                         <li class="nav-item">
                             <a class="nav-link" href="#">Contact</a>
                         </li>
+                        {% if logged_in %}
+                        <li class="nav-item">
+                            <a href="#"><img src="{{data['profile_pic']}}" alt="Profile" class="profile-pic" data-bs-toggle="modal" data-bs-target="#userDetailsModal"></a>
+                        </li>
+                        <li class="nav-item">
+                            <button class="btn btn-logout">Logout</button>
+                        </li> 
+                        {% else %}
                         <li class="nav-item">
                             <button class="btn btn-login" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
                         </li>
                         <li class="nav-item">
                             <button class="btn btn-signup">Sign Up</button>
                         </li>
-                        <li class="nav-item">
-                            <a href="#"><img src="./pp.PNG" alt="Profile" class="profile-pic" data-bs-toggle="modal" data-bs-target="#userDetailsModal"></a>
-                        </li>
-                        <li class="nav-item">
-                            <button class="btn btn-logout">Logout</button>
-                        </li> 
+                        {% endif %}
+                        
                     </ul>
                     
                 </div>
@@ -359,18 +363,18 @@
     <div class="container mt-5">
         <div class="row">
             <div class="col-md-8">
-                <h2 class="property-title">123 Main St, Springfield</h2>
+                <h2 class="property-title">{{data.address}}, {{data.city}}, {{data.state}} </h2>
                 
                 <div id="propertyCarousel" class="carousel slide" data-bs-ride="carousel">
                     <div class="carousel-inner">
                         <div class="carousel-item active">
-                            <img src="https://via.placeholder.com/800x400" alt="Property Image 1" data-bs-toggle="modal" data-bs-target="#imageModal1">
+                            <img src="{{data.property_imgs}}{{data.file_1}}" alt="Property Image 1" data-bs-toggle="modal" data-bs-target="#imageModal1">
                         </div>
                         <div class="carousel-item">
-                            <img src="https://via.placeholder.com/800x400" alt="Property Image 2" data-bs-toggle="modal" data-bs-target="#imageModal2">
+                            <img src="{{data.property_imgs}}{{data.file_2}}" alt="Property Image 2" data-bs-toggle="modal" data-bs-target="#imageModal2">
                         </div>
                         <div class="carousel-item">
-                            <img src="https://via.placeholder.com/800x400" alt="Property Image 3" data-bs-toggle="modal" data-bs-target="#imageModal3">
+                            <img src="{{data.property_imgs}}{{data.file_3}}" alt="Property Image 3" data-bs-toggle="modal" data-bs-target="#imageModal3">
                         </div>
                     </div>
                     <button class="carousel-control-prev" type="button" data-bs-target="#propertyCarousel" data-bs-slide="prev">
@@ -386,12 +390,12 @@
 
             <div class="col-md-4">
                 <div class="landlord-info">
-                    <img src="https://via.placeholder.com/100" alt="Landlord">
-                    <h5>John Doe</h5>
-                    <p>Contact: johndoe@example.com</p>
+                    <img src="{{data.img_path}}{{landlord_data.profile_pic}}" alt="Landlord">
+                    <h5>{{landlord_data['first_name']}} {{ landlord_data['last_name'] }}</h5>
+                    <p>Contact: {{landlord_data['email']}}</p>
                 </div>
                 <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#appointmentModal">Book a Tour</button>
-                <button class="btn btn-secondary w-100" data-bs-toggle="modal" data-bs-target="#tenancyModal">Apply for Tenancy</button>
+                <button class="btn btn-secondary w-100" data-bs-toggle="modal" data-bs-target={% if logged_in %}"#tenancyModal" {% else %} "#loginModal" {% endif %}>Apply for Tenancy</button>
             </div>
         </div>
 
@@ -401,12 +405,16 @@
                     <div class="card-body">
                         <h5 class="card-title">Property Details</h5>
                         <ul>
-                            <li><i class="fas fa-tag"></i> Price: $1200/mo</li>
-                            <li><i class="fas fa-bed"></i> Bedrooms: 3</li>
-                            <li><i class="fas fa-bath"></i> Bathrooms: 2</li>
-                            <li><i class="fas fa-ruler-combined"></i> Square Feet: 1200 sqft</li>
-                            <li><i class="fas fa-home"></i> Status: For Rent</li>
-                            <li><i class="fas fa-info-circle"></i> Description: This beautiful 3-bedroom, 2-bathroom home features a spacious living area, modern kitchen, and a lovely backyard. Perfect for families!</li>
+                            <li><i class="fas fa-tag"></i> Price: ₦{{data.price}}/yr</li>
+                            <li><i class="fas fa-bed"></i> Bedrooms: {{ data.bedrooms }}</li>
+                            <li><i class="fas fa-bath"></i> Bathrooms: {{ data.bathrooms }}</li>
+                            {% if data.sqft == None %}
+                            
+                            {% else %}
+                            <li><i class="fas fa-ruler-combined"></i> Square Feet: {{ data.sqft }} sqft</li>
+                            {% endif %}
+                            <li><i class="fas fa-home"></i> Status: {{data.status}}</li>
+                            <li><i class="fas fa-info-circle"></i> Description: {{ data.description }} </li>
                         </ul>
                     </div>
                 </div>
@@ -423,7 +431,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <img src="https://via.placeholder.com/800x400" alt="Property Image 1" class="img-fluid">
+                    <img src="{{data.property_imgs}}{{data.file_1}}" alt="Property Image 1" class="img-fluid">
                 </div>
             </div>
         </div>
@@ -437,7 +445,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <img src="https://via.placeholder.com/800x400" alt="Property Image 2" class="img-fluid">
+                    <img src="{{data.property_imgs}}{{data.file_2}}" alt="Property Image 2" class="img-fluid">
                 </div>
             </div>
         </div>
@@ -451,7 +459,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <img src="https://via.placeholder.com/800x400" alt="Property Image 3" class="img-fluid">
+                    <img src="{{data.property_imgs}}{{data.file_3}}" alt="Property Image 3" class="img-fluid">
                 </div>
             </div>
         </div>
@@ -469,15 +477,15 @@
                     <form>
                         <div class="mb-3">
                             <label for="name" class="form-label">Name</label>
-                            <input type="text" class="form-control" id="name" required>
+                            <input type="text" class="form-control" id="name" name="name" value="{% if logged_in %}{{ data['user_data']['first_name'] }} {{ data['user_data']['last_name'] }} {% endif %}" required>
                         </div>
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" required>
+                            <input type="email" class="form-control" id="email"  name="email" value="{% if logged_in %}{{ data['user_data']['email'] }}{% endif %}">
                         </div>
                         <div class="mb-3">
                             <label for="phone" class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" id="phone" required>
+                            <input type="tel" class="form-control" id="phone" name="phone_number" value="{% if logged_in %}{{ data['user_data']['phone_number'] }}{% endif %}" required>
                         </div>
                         <div class="mb-3">
                             <label for="viewing_date" class="form-label">Viewing Date</label>
@@ -507,10 +515,10 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form>
+                <form action="login" method="post">
                     <div class="mb-3">
                         <label for="loginEmail" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="loginEmail" required>
+                        <input type="email" class="form-control" id="loginEmail" name="email" required>
                     </div>
                     <div class="mb-3 position-relative">
                         <label for="password" class="form-label">Password</label>
@@ -520,8 +528,8 @@
                     <button type="submit" class="btn btn-primary w-100">Login</button>
                 </form>
                 <div class="mt-3 text-center">
-                    <p class="mb-0">Don't have an account? <a href="#">Sign Up</a></p>
-                    <p class="mb-0"><a href="#">Forgot Password?</a></p>
+                    <p class="mb-0">Don't have an account? <a href="{{url_for('signup')}}">Sign Up</a></p>
+                    <p class="mb-0"><a href="{{url_for('forgot_password')}}">Forgot Password?</a></p>
                 </div>
             </div>
         </div>
@@ -529,6 +537,7 @@
 </div>
 
     <!-- Tenancy Application Modal -->
+    {% if logged_in %}
     <div class="modal fade" id="tenancyModal" tabindex="-1" aria-labelledby="tenancyModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -653,24 +662,26 @@
             </div>
         </div>
     </div>
+    {% endif %}
 
      <!---- Profile Modal ----->
+     {% if logged_in %}
      <div class="modal fade" id="userDetailsModal" tabindex="-1" aria-labelledby="userDetailsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-body">
-                    <form action="/upload_image" method="POST" enctype="multipart/form-data">
+                    <form action="change_profile_pic" method="POST" enctype="multipart/form-data">
                         <div class="d-flex justify-content-center mb-4">
                             <div class="profile-pic-container">
                                 <input type="file" id="profilePicInput" name="profile_pic" class="profile-pic-input" accept="image/*">
                                 <label for="profilePicInput" class="profile-pic-label">
-                                    <img id="profilePic" src="pp.PNG" alt="Profile Picture" class="profile-pic2">
+                                    <img id="profilePic" src="{{data['profile_pic']}}" alt="Profile Picture" class="profile-pic2">
                                     <div class="profile-pic-overlay">
                                         <i class="fas fa-camera"></i>
                                         <span>Change</span>
                                     </div>
                                 </label>
-                                <a href="#" class="change-btn">Save</a>
+                                <button type="submit" class="change-btn">Save</button>
                             </div>
                         </div>
                     <div class="mb-3">
@@ -705,18 +716,20 @@
             </div>
         </div>
     </div>
+    {% endif %}
 
     <!-- Bottom Navigation -->
+     {% if logged_in %}
     <nav class="bottom-nav">
-        <a class="nav-link" href="#">
+        <a class="nav-link" href="{{url_for('home')}}">
             <i class="fas fa-home"></i>
             Home
         </a>
-        <a class="nav-link" href="#">
+        <a class="nav-link" href="{{url_for('dashboard')}}">
             <i class="fas fa-chart-line"> </i>
             Dashboard
         </a>
-        <a class="nav-link" href="#">
+        <a class="nav-link" href="{{url_for('search')}}">
             <i class="fas fa-search"></i>
             Search
         </a>
@@ -725,6 +738,7 @@
             Profile
         </a>
     </nav>
+    {% endif %}
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
