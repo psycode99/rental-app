@@ -508,8 +508,36 @@ def add_property():
 
 @app.route('/make_booking', methods=['POST', "GET"])
 def make_booking():
-    pass
+    property_id = int(request.args.get("property_id"))
+    if request.method == "POST":
+        name = request.form.get('name').title()
+        email = request.form.get('email')
+        phone_number = request.form.get('phone_number')
+        viewing_date_str = request.form.get('viewing_date')
+        viewing_time = request.form.get('viewing_time')
+        notes = request.form.get('notes')
 
+        viewing_date = datetime.strptime(viewing_date_str, '%Y-%m-%d').date()
+
+        booking_data = {
+        "property_id": property_id,
+        'name': name,
+        'email': email,
+        'phone_number': phone_number,
+        'viewing_date': viewing_date.isoformat(),
+        'viewing_time': viewing_time,
+        'notes': notes
+        }
+
+        res = requests.post(f"{host}/v1/bookings/{property_id}", json=booking_data)
+        if res.status_code == 201:
+            return redirect(request.url)
+        else:
+            return {
+                "status_code": str(res.status_code),
+                "detail": str(res.json().get('detail'))
+            }
+    return redirect(url_for('property', id=property_id))
 
 @app.route('/make_maintenance_req', methods=['POST', "GET"])
 def make_maintenance_req():

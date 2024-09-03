@@ -474,7 +474,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form>
+                    <form action="{{url_for('make_booking', property_id=data.id)}}" method="post">
                         <div class="mb-3">
                             <label for="name" class="form-label">Name</label>
                             <input type="text" class="form-control" id="name" name="name" value="{% if logged_in %}{{ data['user_data']['first_name'] }} {{ data['user_data']['last_name'] }} {% endif %}" required>
@@ -489,11 +489,11 @@
                         </div>
                         <div class="mb-3">
                             <label for="viewing_date" class="form-label">Viewing Date</label>
-                            <input type="date" class="form-control" id="viewing_date" required>
+                            <input type="date" class="form-control" id="viewing_date" name="viewing_date" required>
                         </div>
                         <div class="mb-3">
                             <label for="viewing_time" class="form-label">Viewing Time</label>
-                            <input type="time" class="form-control" id="viewing_time" required>
+                            <input type="time" class="form-control" id="viewing_time" name="viewing_time" required>
                         </div>
                         <div class="mb-3">
                             <label for="notes" class="form-label">Notes</label>
@@ -549,107 +549,107 @@
                     <form>
                         <div class="mb-3">
                             <label for="first_name" class="form-label">First Name</label>
-                            <input type="text" class="form-control" id="first_name" required>
+                            <input type="text" class="form-control" id="first_name" name="first_name" value="{% if logged_in %}{{ data['user_data']['first_name'] }}{% endif %}" required>
                         </div>
                         <div class="mb-3">
                             <label for="last_name" class="form-label">Last Name</label>
-                            <input type="text" class="form-control" id="last_name" required>
+                            <input type="text" class="form-control" id="last_name" name="last_name" value="{% if logged_in %}{{ data['user_data']['last_name'] }}{% endif %}" required>
                         </div>
                         <div class="mb-3">
                             <label for="date_of_birth" class="form-label">Date of Birth</label>
-                            <input type="date" class="form-control" id="date_of_birth" required>
+                            <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" required>
                         </div>
                         <div class="mb-3">
                             <label for="national_identity_number" class="form-label">National Identity Number</label>
-                            <input type="text" class="form-control" id="national_identity_number" required>
+                            <input type="text" class="form-control" id="national_identity_number" name="national_identity_number" required>
                         </div>
                         <div class="mb-3">
                             <label for="email_address" class="form-label">Email Address</label>
-                            <input type="email" class="form-control" id="email_address" required>
+                            <input type="email" class="form-control" id="email_address" name="email_address" value="{% if logged_in %}{{ data['user_data']['email'] }}{% endif %}" required>
                         </div>
                         <div class="mb-3">
                             <label for="phone_number" class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" id="phone_number" required>
+                            <input type="tel" class="form-control" id="phone_number" name="phone_number"  value="{% if logged_in %}{{ data['user_data']['phone_number'] }}{% endif %}" required>
                         </div>
                         <div class="mb-3">
                             <label for="current_address" class="form-label">Current Address</label>
-                            <input type="text" class="form-control" id="current_address" required>
+                            <input type="text" class="form-control" id="current_address" name="current_address" required>
                         </div>
                         <div class="mb-3">
                             <label for="previous_address" class="form-label">Previous Address</label>
-                            <input type="text" class="form-control" id="previous_address">
+                            <input type="text" class="form-control" id="previous_address" name="previous_address">
                         </div>
                         <div class="mb-3">
                             <label for="employer_name" class="form-label">Employer Name</label>
-                            <input type="text" class="form-control" id="employer_name" required>
+                            <input type="text" class="form-control" id="employer_name" name="employer_name" required>
                         </div>
                         <div class="mb-3">
                             <label for="job_title" class="form-label">Job Title</label>
-                            <input type="text" class="form-control" id="job_title" required>
+                            <input type="text" class="form-control" id="job_title" name="job_title" required>
                         </div>
                         <div class="mb-3">
                             <label for="employment_duration" class="form-label">Employment Duration (years)</label>
-                            <input type="number" class="form-control" id="employment_duration" required>
+                            <input type="number" class="form-control" id="employment_duration" name="employment_duration" required>
                         </div>
                         <div class="mb-3">
                             <label for="monthly_income" class="form-label">Monthly Income</label>
-                            <input type="number" step="0.01" class="form-control" id="monthly_income" required>
+                            <input type="number" step="0.01" class="form-control" id="monthly_income" name="monthly_income" required>
                         </div>
                         <div class="mb-3">
                             <label for="previous_landlord_name" class="form-label">Previous Landlord Name</label>
-                            <input type="text" class="form-control" id="previous_landlord_name">
+                            <input type="text" class="form-control" id="previous_landlord_name" name="previous_landlord_name">
                         </div>
                         <div class="mb-3">
                             <label for="previous_landlord_contact" class="form-label">Previous Landlord Contact</label>
-                            <input type="text" class="form-control" id="previous_landlord_contact">
+                            <input type="text" class="form-control" id="previous_landlord_contact" name="previous_landlord_contact">
                         </div>
                         <div class="mb-3">
                             <label for="reason_for_moving" class="form-label">Reason for Moving</label>
-                            <input type="text" class="form-control" id="reason_for_moving">
+                            <input type="text" class="form-control" id="reason_for_moving" name="reason_for_moving">
                         </div>
                         <div class="mb-3">
                             <label for="personal_reference_name" class="form-label">Personal Reference Name</label>
-                            <input type="text" class="form-control" id="personal_reference_name">
+                            <input type="text" class="form-control" id="personal_reference_name" name="personal_reference_name">
                         </div>
                         <div class="mb-3">
                             <label for="personal_reference_contact" class="form-label">Personal Reference Contact</label>
-                            <input type="text" class="form-control" id="personal_reference_contact">
+                            <input type="text" class="form-control" id="personal_reference_contact" name="personal_reference_contact">
                         </div>
                         <div class="mb-3">
                             <label for="professional_reference_name" class="form-label">Professional Reference Name</label>
-                            <input type="text" class="form-control" id="professional_reference_name">
+                            <input type="text" class="form-control" id="professional_reference_name" name="professional_reference_name">
                         </div>
                         <div class="mb-3">
                             <label for="professional_reference_contact" class="form-label">Professional Reference Contact</label>
-                            <input type="text" class="form-control" id="professional_reference_contact">
+                            <input type="text" class="form-control" id="professional_reference_contact" name="professional_reference_contact">
                         </div>
                         <div class="mb-3">
                             <label for="application_date" class="form-label">Application Date</label>
-                            <input type="date" class="form-control" id="application_date" required>
+                            <input type="date" class="form-control" id="application_date" name="application_date" required>
                         </div>
                         <div class="mb-3">
                             <label for="desired_move_in_date" class="form-label">Desired Move-In Date</label>
-                            <input type="date" class="form-control" id="desired_move_in_date" required>
+                            <input type="date" class="form-control" id="desired_move_in_date" name="desired_move_in_date" required>
                         </div>
                         <div class="mb-3">
                             <label for="criminal_record" class="form-label">Criminal Record</label>
-                            <textarea class="form-control" id="criminal_record" rows="3"></textarea>
+                            <textarea class="form-control" id="criminal_record" name="criminal_record" rows="3"></textarea>
                         </div>
                         <div class="mb-3">
                             <label for="pets" class="form-label">Pets</label>
-                            <input type="text" class="form-control" id="pets">
+                            <input type="text" class="form-control" id="pets" name="pets">
                         </div>
                         <div class="mb-3">
                             <label for="number_of_occupants" class="form-label">Number of Occupants</label>
-                            <input type="number" class="form-control" id="number_of_occupants" required>
+                            <input type="number" class="form-control" id="number_of_occupants" name="number_of_occupants" required>
                         </div>
                         <div class="mb-3">
                             <label for="special_requests" class="form-label">Special Requests</label>
-                            <textarea class="form-control" id="special_requests" rows="3"></textarea>
+                            <textarea class="form-control" id="special_requests" name="special_requests" rows="3"></textarea>
                         </div>
                         <div class="mb-3">
                             <label for="file_upload" class="form-label">Upload Document</label>
-                            <input type="file" class="form-control" id="file_upload" multiple accept=".pdf">
+                            <input type="file" class="form-control" id="file_upload" name="file_upload" multiple accept=".pdf">
                         </div>
                         
                         <div id="uploaded_files" class="card-container"></div>
@@ -658,6 +658,7 @@
                         
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </form>
+                    
                 </div>
             </div>
         </div>
