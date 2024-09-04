@@ -15,6 +15,37 @@ property_uploads_dir = f"{host}/static/property_uploads/"
 SECRET_KEY = "Q4epX5pDd_kjTbvRZ-8tLrXjFskv45pXyswhv48H8oM"
 
 
+def humanize_res(data):
+    for prop in data['items']:
+        price = prop['price']
+        bathrooms = prop['bathrooms']
+        if price.is_integer():
+            price = int(price)
+        
+        if bathrooms.is_integer():
+            bathrooms = int(bathrooms)
+
+        humanized_price = humanize.intcomma(price)
+        prop['bathrooms'] = bathrooms
+        prop['price'] = humanized_price
+        # Assume data contains a 'timestamp' field in string format
+        timestamp_str = prop['created_at']
+        
+        # Convert the string to a datetime object
+        timestamp = datetime.fromisoformat(timestamp_str)
+        
+        # Optionally localize to a specific timezone if needed
+        timestamp = timestamp.astimezone(pytz.timezone("Africa/Lagos"))
+
+        # # Format the datetime as needed, e.g., 'Sep 2, 2024, 5:08 AM'
+        # formatted_time = timestamp.strftime('%b %d, %Y, %I:%M %p')
+        
+        # Alternatively, you can use humanize to make it more natural, like "2 days ago"
+        humanized_time = humanize.naturaltime(timestamp)
+        prop['created_at'] = humanized_time
+    return data
+
+
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -382,8 +413,184 @@ def property():
 
 @app.route('/search', methods=['POST', 'GET'])
 def search():
-    return render_template('search.html')
+    token = request.cookies.get('access_token')
+    page = request.args.get('page')
+    size = request.args.get('size')
 
+    total = session.get('total', 0)
+    total_pages = session.get('pages', 0)
+
+    if page == None or size == None:
+        page = 1
+        size = 1
+       
+    if request.method == "POST":
+        state = request.form.get('state')
+        city = request.form.get('city')
+        bedrooms = request.form.get('bedrooms')
+        bathrooms = request.form.get("bathrooms")
+        price = request.form.get("price")
+        status = request.form.get("status")
+
+        search_params = {
+            "state": state if state else None,
+            "city": city if city else None,
+            "bedrooms": int(bedrooms) if bedrooms else None,
+            "bathrooms": float(bathrooms) if bathrooms else None,
+            "price": float(price) if price else None,
+            "status": status
+        }
+
+        res = requests.post(f"{host}/v1/properties/search?page={page}&size=1", params=search_params)
+        if res.status_code == 200:
+            session['state'] = state if state else None
+            session['city'] = city if city else None
+            session['bedrooms'] = int(bedrooms) if bedrooms else None
+            session['bathrooms'] = float(bathrooms) if bathrooms else None
+            session['price'] = float(price) if price else None
+            session['status'] = status
+
+            data = res.json()
+            data['property_imgs'] = property_uploads_dir
+            for prop in data['items']:
+                price = prop['price']
+                bathrooms = prop['bathrooms']
+                if price.is_integer():
+                    price = int(price)
+                
+                if bathrooms.is_integer():
+                    bathrooms = int(bathrooms)
+
+                humanized_price = humanize.intcomma(price)
+                prop['bathrooms'] = bathrooms
+                prop['price'] = humanized_price
+                # Assume data contains a 'timestamp' field in string format
+                timestamp_str = prop['created_at']
+                
+                # Convert the string to a datetime object
+                timestamp = datetime.fromisoformat(timestamp_str)
+                
+                # Optionally localize to a specific timezone if needed
+                timestamp = timestamp.astimezone(pytz.timezone("Africa/Lagos"))
+
+                # # Format the datetime as needed, e.g., 'Sep 2, 2024, 5:08 AM'
+                # formatted_time = timestamp.strftime('%b %d, %Y, %I:%M %p')
+                
+                # Alternatively, you can use humanize to make it more natural, like "2 days ago"
+                humanized_time = humanize.naturaltime(timestamp)
+                prop['created_at'] = humanized_time
+
+                total = data['total']
+                current_page = data['page']
+                size = data['size']
+                total_pages = data['pages']
+
+                session['total'] = total
+                session['page'] = current_page
+                session['size'] = size
+                session['pages'] = total_pages
+
+            if token and verify_token(token):
+                logged_in = True
+                profile_picture = f"{session['profile_pic_path']}{session['profile_pic']}"
+                return render_template(
+                                    'search.html',
+                                    data=data,
+                                    logged_in=logged_in,
+                                    profile_picture=profile_picture,
+                                    total=total,
+                                    page=current_page,
+                                    size=size,
+                                    total_pages=total_pages)
+            else:
+                logged_in = False
+                return render_template(
+                                    'search.html',
+                                    data=data,
+                                    logged_in=logged_in,
+                                    total=total,
+                                    page=current_page,
+                                    size=size,
+                                    total_pages=total_pages)
+        else:
+            return {
+                "status_code": str(res.status_code),
+                "detail": str(res.text)
+            }
+    if token and verify_token(token):
+        logged_in = True
+
+        state = session.get('state')
+        city = session.get('city')
+        bedrooms = session.get('bedrooms')
+        bathrooms = session.get('bathrooms')
+        price = session.get('price')
+        status = session.get('status')
+        # Store these variables in a dictionary or JSON object
+        search_params = {
+            "state": state,
+            "city": city,
+            "bedrooms": bedrooms,
+            "bathrooms": bathrooms,
+            "price": price,
+            "status": status
+        }
+        res = requests.post(f"{host}/v1/properties/search?page={page}&size=1", params=search_params)
+        if res.status_code == 200:
+            data = res.json()
+            data = data if data else None
+            data['property_imgs'] = property_uploads_dir
+            data = humanize_res(data=data)
+            data = data if data else None
+            profile_picture = f"{session['profile_pic_path']}{session['profile_pic']}"
+            return render_template('search.html',
+                                    data=data,
+                                    total=total,
+                                    page=int(page),
+                                    size=size,
+                                    total_pages=total_pages,
+                                    logged_in=logged_in,
+                                    profile_picture=profile_picture)
+        else:
+            return {
+                "status_code": str(res.status_code)
+            }
+    else:
+        logged_in = False
+
+        state = session.get('state')
+        city = session.get('city')
+        bedrooms = session.get('bedrooms')
+        bathrooms = session.get('bathrooms')
+        price = session.get('price')
+        status = session.get('status')
+
+        # Store these variables in a dictionary or JSON object
+        search_params = {
+            "state": state,
+            "city": city,
+            "bedrooms": bedrooms,
+            "bathrooms": bathrooms,
+            "price": price,
+            "status": status
+        }
+        res = requests.post(f"{host}/v1/properties/search?page={page}&size=1", params=search_params)
+        if res.status_code == 200:
+            data = res.json()
+            data = data if data else None
+            data['property_imgs'] = property_uploads_dir
+            data = humanize_res(data=data)
+            return render_template('search.html',
+                                    data=data,
+                                    total=total,
+                                    page=int(page),
+                                    size=size,
+                                    total_pages=total_pages,
+                                    logged_in=logged_in)
+        else:
+            return {
+                "status_code": str(res.status_code)
+            }
 
 @app.route('/dashboard', methods=["POST", "GET"])
 @token_required

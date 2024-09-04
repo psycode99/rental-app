@@ -5,6 +5,7 @@ from ..database import get_db
 from ..oauth import get_current_user
 from .. import models, schemas
 from sqlalchemy.orm import Session
+from fastapi import status as st
 import os
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fastapi_pagination import Page
@@ -82,7 +83,7 @@ def search(
 
     # Check if the filtered query returns any results
     if query.count() == 0:
-        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
+        raise HTTPException(status_code=st.HTTP_204_NO_CONTENT)
 
     # Return paginated results
     return paginate(query)
