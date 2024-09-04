@@ -257,7 +257,6 @@ def profile_pic():
                         "last_name": session['last_name'],
                         "email": session['email'],
                         "phone_number": str(session['phone_number']),
-                        "landlord": session['landlord'],
                         "password": session['password'],
                         "profile_pic": session['profile_pic']
                     }
@@ -266,16 +265,18 @@ def profile_pic():
                     login = requests.post(f"{host}/v1/auth/login", data={"username":signup_data['email'], "password":signup_data['password']})
                     if login.status_code == 200:
                         access_token = login.json().get("access_token")
+                        session.pop('password', None)
                         headers = {
                         'Authorization': f'Bearer {access_token}',
                         "Content-Type": "application/json"
                         }
                         signup_data['profile_pic'] = filename
+                        del signup_data['password']
                         update_res = requests.put(f"{host}/v1/users/{user_id}", headers=headers, json=signup_data )
                         print(update_res.json())
                         if update_res.status_code == 200:
-                            session['profile_pic_path'] = f"{profile_pic_dir}{filename}"
-                            session.pop("password")
+                            # session['profile_pic'] = f"{profile_pic_dir}{filename}"
+                            session['profile_pic'] = f"{filename}"
                             return redirect(url_for('login'))
                         else:
                             return "image update failed"
@@ -293,6 +294,7 @@ def profile_pic():
 
 
 @app.route('/change_profile_pic', methods=['POST', 'GET'])
+@token_required
 def change_profile_pic():
     token = request.cookies.get('access_token')
     print(token)
@@ -321,22 +323,27 @@ def change_profile_pic():
                         if token_verification['landlord']:
                             res = requests.get(f"{host}/v1/users/landlords/{token_verification['user_id']}")
                             data = res.json()
+                            del data['id']
+                            del data['created_at']
+                            del data['property']
+                            del data['landlord']
                         else:
                             res = requests.get(f"{host}/v1/users/tenants/{token_verification['user_id']}")
                             data = res.json()
+                            del data['id']
+                            del data['created_at']
+                            del data['tenant_application']
+                            del data['landlord']
+                            del data['payments']
                         data['profile_pic'] = filename
-                        data['password'] = session['password']
-                        del data['id']
-                        del data['created_at']
-                        del data['property']
                         headers = {
                             'Authorization': f'Bearer {token}',
                             "Content-Type": "application/json"
                             }
-                        print(data)
                         res = requests.put(f"{host}/v1/users/{token_verification['user_id']}",  headers=headers, json=data)
                         if res.status_code == 200:
-                            session['profile_pic_path'] = f"{profile_pic_dir}{filename}"
+                            # session['profile_pic'] = f"{profile_pic_dir}{filename}"
+                            session['profile_pic'] = f"{filename}"
                             return redirect(url_for('home'))
                         else:
                             return "image update failed"
@@ -390,8 +397,8 @@ def property():
     logged_in = None
     token = request.cookies.get('access_token')
     if token and verify_token(token):
-        user_profile_pic = session['profile_pic']
-        property_data['profile_pic'] =f"{session['profile_pic_path']}{user_profile_pic}" 
+        user_profile_picture = session['profile_pic']
+        property_data['profile_pic'] =f"{session['profile_pic_path']}{user_profile_picture}" 
         logged_in = True
         user_data = {
             "first_name": session['first_name'],

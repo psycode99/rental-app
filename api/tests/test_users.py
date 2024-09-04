@@ -123,20 +123,18 @@ def test_update_user_authorized_wrong_user(test_landlord, test_landlord2, author
     assert res.status_code == status_code
 
 
-@pytest.mark.parametrize("first_name, last_name, email, phone_number, landlord, password, status_code",[
-    ("Jon", "Doe", "john.doe@example.com", "1234567890", True, "1234", 401),
-    ("Jon", "Doe", "jo.doe@example.com", "1234567890", True, "1234", 401),
-    ("Jon", "Doe", "jo.doe@example.com", "123456789", True, "1234", 401)
+@pytest.mark.parametrize("first_name, last_name, email, phone_number, status_code",[
+    ("Jon", "Doe", "john.doe@example.com", "1234567890",  401),
+    ("Jon", "Doe", "jo.doe@example.com", "1234567890",  401),
+    ("Jon", "Doe", "jo.doe@example.com", "123456789", 401)
 ])
 def test_update_user_unauthorized_user(test_landlord, test_landlord2, client, first_name, last_name, 
-                                  email, phone_number, landlord, password, status_code):
+                                  email, phone_number, status_code):
     user_data =   {
       "first_name": first_name,
       "last_name": last_name,
       "email": email,
-      "phone_number": phone_number,
-      "landlord": landlord,
-      "password": password
+      "phone_number": phone_number
     }
     res = client.put(f'/v1/users/{test_landlord["id"]}', json=user_data)
     assert res.status_code == status_code

@@ -126,7 +126,7 @@ def remove_tenant(property_id: int, tenant_id: int, db: Session = Depends(get_db
 
 
 @router.put('/{user_id}', status_code=status.HTTP_200_OK, response_model=schemas.UserResp)
-def update_user(user_id: int, user: schemas.UserCreate, db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
+def update_user(user_id: int, user: schemas.UserUpdate, db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
     # user_id refers to id from tenant or landlord table not  fom users table
     
      
@@ -154,7 +154,8 @@ def update_user(user_id: int, user: schemas.UserCreate, db: Session = Depends(ge
     if current_user.id != user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     
-    user.password = utils.hash_pwd(user.password)
+    # user.password = utils.hash_pwd(user.password)
+    
     if user_check.landlord:
         stmt = (
             update(models.Users).

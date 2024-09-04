@@ -50,6 +50,14 @@ class UserResp(BaseModel):
     # class Config:
     #     from_attributes = True
 
+
+class UserUpdate(BaseModel):
+    first_name: str
+    last_name: str
+    phone_number: str
+    email: EmailStr
+    profile_pic: Optional[str] = None
+
 class TenantResp(UserResp):
     tenant_application: List['TenantApplicationResp'] = []
     payments: List['PaymentResp'] = []
