@@ -500,6 +500,12 @@ def search():
             if token and verify_token(token):
                 logged_in = True
                 profile_picture = f"{session['profile_pic_path']}{session['profile_pic']}"
+                data['first_name'] = session.get('first_name', None)
+                data['last_name'] = session.get("last_name", None)
+                data['email'] = session.get("email", None)
+                data['landlord'] = session.get("landlord", None)
+                data['phone_number'] = session.get("phone_number", None)
+                
                 return render_template(
                                     'search.html',
                                     data=data,
@@ -549,6 +555,11 @@ def search():
             data['property_imgs'] = property_uploads_dir
             data = humanize_res(data=data)
             data = data if data else None
+            data['first_name'] = session.get('first_name', None)
+            data['last_name'] = session.get("last_name", None)
+            data['email'] = session.get("email", None)
+            data['landlord'] = session.get("landlord", None)
+            data['phone_number'] = session.get("phone_number", None)
             profile_picture = f"{session['profile_pic_path']}{session['profile_pic']}"
             return render_template('search.html',
                                     data=data,
