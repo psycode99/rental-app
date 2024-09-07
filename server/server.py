@@ -46,6 +46,38 @@ def humanize_res(data):
     return data
 
 
+def humanize_res_single(data):
+
+    price = data['price']
+    bathrooms = data['bathrooms']
+    if price.is_integer():
+        price = int(price)
+    
+    if bathrooms.is_integer():
+        bathrooms = int(bathrooms)
+
+    humanized_price = humanize.intcomma(price)
+    data['bathrooms'] = bathrooms
+    data['price'] = humanized_price
+    # Assume data contains a 'timestamp' field in string format
+    timestamp_str = data['created_at']
+    
+    # Convert the string to a datetime object
+    timestamp = datetime.fromisoformat(timestamp_str)
+    
+    # Optionally localize to a specific timezone if needed
+    timestamp = timestamp.astimezone(pytz.timezone("Africa/Lagos"))
+
+    # # Format the datetime as needed, e.g., 'Sep 2, 2024, 5:08 AM'
+    # formatted_time = timestamp.strftime('%b %d, %Y, %I:%M %p')
+    
+    # Alternatively, you can use humanize to make it more natural, like "2 days ago"
+    humanized_time = humanize.naturaltime(timestamp)
+    data['created_at'] = humanized_time
+
+    return data
+
+
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -797,6 +829,55 @@ def view_properties():
         }
 
 
+@app.route('/user_property', methods=["POST", "GET"])
+@token_required
+def user_property():
+    property_id = int(request.args.get('id'))
+    user_id = session.get('user_id', None)
+    first_name = session.get('first_name', None)
+    last_name = session.get('last_name', None)
+    phone_number = session.get('phone_number', None)
+    landlord = session.get('landlord', None)
+
+    user_data = {
+        "id": user_id,
+        "first_name": first_name,
+        "last_name": last_name,
+        "phone_number": phone_number,
+        "landlord": landlord
+    }
+
+    res = requests.get(f"{host}/v1/properties/{property_id}")
+    if res.status_code == 200:
+        data = res.json()
+        data = humanize_res_single(data)
+        data['property_imgs'] = property_uploads_dir
+
+        landlord_id = data['landlord_id']
+        landlord_res = requests.get(f"{host}/v1/users/landlords/{landlord_id}")
+        if landlord_res.status_code == 200:
+            landlord_info = landlord_res.json()
+            landlord_data = {
+                "landlord_id": landlord_info['id'],
+                "profile_pic": landlord_info['profile_pic'],
+                "email": landlord_info['email']
+            }
+            data['user_data'] = user_data
+            data['landlord_data'] = landlord_data
+            data['img_path'] = profile_pic_dir
+            return render_template("user_property.html", data=data)
+        else:
+            return {
+            "status_code": str(landlord_res.status_code),
+            "detail": str( landlord_res.text)
+        }
+
+
+    else:
+        return {
+            "status_code": str(res.status_code),
+            "detail": str( res.text)
+        }
 
 
    
