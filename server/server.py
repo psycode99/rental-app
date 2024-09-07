@@ -775,10 +775,31 @@ def make_tenant_app():
 
 
 @app.route('/view_properties', methods=['POST', "GET"])
+@token_required
 def view_properties():
-    return render_template("view_prop.html")
+    token = request.cookies.get('access_token')
+    headers = {'Authorization': f'Bearer {token}',
+                "Content-Type": "application/json"
+                        }
+    
+    res = requests.get(f"{host}/v1/properties/user", headers=headers)
+    
+    if res.status_code == 200:
+        data = res.json()
+        if data['items']:
+            data = humanize_res(data)
+        data['property_imgs'] = property_uploads_dir
+        return render_template("view_prop.html", data=data)
+    else:
+        return {
+            "status_code": str(res.status_code),
+            "detail": res.text
+        }
 
 
+
+
+   
 @app.route('/view_bookings', methods=['POST', "GET"])
 def view_bookings():
     return render_template("view_bookings.html")

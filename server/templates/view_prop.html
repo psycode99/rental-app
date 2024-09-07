@@ -292,14 +292,12 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Home</a>
+                        <a class="nav-link" href="{{ url_for('home') }}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Dashboard</a>
+                        <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
                     </li>
-                    <li class="nav-item">
-                        <a href="#"><img src="./pp.PNG" alt="Profile" class="profile-pic"></a>
-                    </li>
+                   
                     <li class="nav-item">
                         <button class="btn btn-logout">Logout</button>
                     </li>
@@ -322,90 +320,42 @@
      
     <div class="container my-5">
         <div class="row row-cols-1 row-cols-md-3 g-4">
-            <div class="col">
-                <div class="card">
-                    <div class="card-img-top position-relative">
-                        <a href="#">
-                            <img src="https://via.placeholder.com/300x200" alt="Property Image" class="w-100">
-                            <span class="price-badge">$1200/mo</span>
-                            <!-- <i class="heart-icon fas fa-heart"></i> Heart Icon -->
-                        </a>
-                    </div>
-                    <div class="property-details">
-                        <h5>123 Main St, Springfield</h5>
-                        <div class="property-features">
-                            <div class="feature">
-                                <i class="fas fa-bed"></i> 3 Bedrooms
-                            </div>
-                            <div class="feature">
-                                <i class="fas fa-bath"></i> 2 Bathrooms
-                            </div>
-                            <div class="feature">
-                                <i class="fas fa-ruler-combined"></i> 1200 sqft
-                            </div>
-                            <div class="feature">
-                                <i class="fas fa-tag"></i> For Rent
+        {% if data and data['items'] != [] %}
+            {% for property in data['items'] %}
+                <div class="col">
+                    <div class="card">
+                        <div class="card-img-top position-relative">
+                            <a href="{{url_for('property', id=property.id)}}">
+                                <img src="{{data['property_imgs']}}{{ property.file_1 }}" alt="Property Image" class="w-100">
+                                <span class="price-badge price">₦{{property.price}}/yr</span>
+                                <!-- <i class="heart-icon fas fa-heart"></i> Heart Icon -->
+                            </a>
+                        </div>
+                        <div class="property-details">
+                            <h5>{{ property.address }}, {{ property.city }}, {{ property.state }}</h5>
+                            <div class="property-features">
+                                <div class="feature">
+                                    <i class="fas fa-bed"></i> {{property.bedrooms}} Bedrooms
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-bath"></i> {{property.bathrooms}} Bathrooms
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-tag"></i> {{property.status}}
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-clock"></i> {{property.created_at}} 
+                                </div>
+                                
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col">
-                <div class="card">
-                    <div class="card-img-top position-relative">
-                        <a href="#">
-                            <img src="https://via.placeholder.com/300x200" alt="Property Image" class="w-100">
-                            <span class="price-badge">$1200/mo</span>
-                            <!-- <i class="heart-icon fas fa-heart"></i> Heart Icon -->
-                        </a>
-                    </div>
-                    <div class="property-details">
-                        <h5>123 Main St, Springfield</h5>
-                        <div class="property-features">
-                            <div class="feature">
-                                <i class="fas fa-bed"></i> 3 Bedrooms
-                            </div>
-                            <div class="feature">
-                                <i class="fas fa-bath"></i> 2 Bathrooms
-                            </div>
-                            <div class="feature">
-                                <i class="fas fa-ruler-combined"></i> 1200 sqft
-                            </div>
-                            <div class="feature">
-                                <i class="fas fa-tag"></i> For Rent
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="card">
-                    <div class="card-img-top position-relative">
-                        <a href="#">
-                            <img src="https://via.placeholder.com/300x200" alt="Property Image" class="w-100">
-                            <span class="price-badge">$1200/mo</span>
-                            <!-- <i class="heart-icon fas fa-heart"></i> Heart Icon -->
-                        </a>
-                    </div>
-                    <div class="property-details">
-                        <h5>123 Main St, Springfield</h5>
-                        <div class="property-features">
-                            <div class="feature">
-                                <i class="fas fa-bed"></i> 3 Bedrooms
-                            </div>
-                            <div class="feature">
-                                <i class="fas fa-bath"></i> 2 Bathrooms
-                            </div>
-                            <div class="feature">
-                                <i class="fas fa-ruler-combined"></i> 1200 sqft
-                            </div>
-                            <div class="feature">
-                                <i class="fas fa-tag"></i> For Rent
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% endfor %}
+        {% else %}
+     
+             <p>You have no properties yet</p>
+        {% endif %}    
             <!-- Repeat for other properties -->
         </div>
     </div>
