@@ -697,7 +697,7 @@ def add_property_img():
 
         except requests.exceptions.RequestException as e:
             flash(f"An error occurred: {e}")
-            return redirect(url_for('upload_images'))
+            return redirect(url_for('add_property_imgs'))
     return render_template('add_prop_img.html')
 
 
@@ -865,7 +865,7 @@ def user_property():
             data['user_data'] = user_data
             data['landlord_data'] = landlord_data
             data['img_path'] = profile_pic_dir
-            return render_template("user_property.html", data=data)
+            return render_template("user_property.html", data=data, logged_in=True)
         else:
             return {
             "status_code": str(landlord_res.status_code),
@@ -878,7 +878,6 @@ def user_property():
             "status_code": str(res.status_code),
             "detail": str( res.text)
         }
-
 
    
 @app.route('/view_bookings', methods=['POST', "GET"])
@@ -921,10 +920,123 @@ def tenant_app():
     return render_template("tenant_app.html")
 
 
-@app.route('/edit_property', methods=['POST', "GET"])
-def edit_property():
-    return render_template("edit_prop_img.html")
+@app.route('/edit_property_img', methods=['POST', "GET"])
+@token_required
+def edit_property_img():
+    property_id = request.args.get('id')
+    res = requests.get(f"{host}/v1/properties/{property_id}")
+    if res.status_code == 200:
+        data = res.json()
+        data['property_imgs'] = property_uploads_dir
+        prop_images = {
+            "image_1": data['file_1'],
+            "image_2": data['file_2'],
+            "image_3": data['file_3']
+        }
+        data['images'] = prop_images
+        session['prop_images'] = prop_images
+    
+    if request.method == "POST":
+        property_id = request.args.get('id')
+        prop_images = session['prop_images']
 
+        for i in range(1, 4):
+            file = request.files.get(f"image{i}")
+            if file and file.filename != "":
+                files = {'file': (file.filename, file.stream, file.mimetype)}
+                try:
+                    response = requests.post(f'{host}/v1/uploads/upload_img', files=files)
+                    if response.status_code == 200:
+                        unique_name = response.json().get('filename')
+                        prop_images[f'image_{i}'] = unique_name
+                    else:
+                        return {
+                            "status_code": str(response.status_code),
+                            "detail": str(response.text)
+                        }
+                except requests.exceptions.RequestException as e:
+                    flash(f"An error occurred: {e}")
+                    return redirect(url_for('edit_property_img'))
+        filenames = [filename for filename in  prop_images.values()]
+        session['edit_imgs'] = filenames
+        session.pop('prop_images', None)
+        return redirect(url_for('edit_property', id=property_id))
+
+    return render_template("edit_prop_img.html", data=data)
+
+
+@app.route('/edit_property', methods=['POST', "GET"])
+@token_required
+def edit_property():
+    property_id = request.args.get('id')
+    res = requests.get(f"{host}/v1/properties/{property_id}")
+    
+    if request.method == "POST":
+        property_id = request.args.get('id')
+        filenames = session.get('edit_imgs')
+        token = request.cookies.get('access_token')
+        if token and verify_token(token):
+            token_verification = verify_token(token)
+            if token_verification['landlord']:
+                res = requests.get(f"{host}/v1/users/landlords/{token_verification['user_id']}")
+                data = res.json()
+
+        address = request.form.get("address").title()
+        bedrooms = request.form.get("bedrooms")
+        bathrooms = request.form.get("bathrooms")
+        sqft = request.form.get("sqft")
+        price = request.form.get('price')
+        city = request.form.get('city').title()
+        state = request.form.get("state").title()
+        description = request.form.get("description")
+        status = request.form.get("status")
+        file_1 = filenames[0] if len(filenames) > 0 else None
+        file_2 = filenames[1] if len(filenames) > 1 else None
+        file_3 = filenames[2] if len(filenames) > 2 else None
+
+        if sqft == "":
+            sqft = None
+        
+
+        property_data = {
+            "address": address,
+            "bedrooms": bedrooms,
+            "bathrooms": bathrooms,
+            "sqft": sqft,
+            "price": price,
+            "city": city,
+            "state": state,
+            "description": description,
+            "landlord_id": token_verification['user_id'],
+            "status": status,
+            "file_1": file_1,
+            "file_2": file_2,
+            "file_3": file_3
+        }
+
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
+
+        res = requests.put(f"{host}/v1/properties/{property_id}", headers=headers, json=property_data)
+        if res.status_code == 200:
+            session.pop("edit_imgs", None)
+            return redirect(url_for('dashboard'))
+        else:
+            return {"status_code": str(res.status_code), "detail": str(res.json().get('detail'))}
+
+        
+    if res.status_code == 200:
+        data = res.json()
+        return render_template("edit_property.html", data=data)
+        
+    else:
+        return {
+            "status": res.status_code,
+            "detail": res.text
+        }
+    
 
 @app.route('/edit_user_info', methods=['POST', "GET"])
 def edit_user_info():

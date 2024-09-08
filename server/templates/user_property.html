@@ -420,7 +420,7 @@
                     <p>Contact: {{ data.landlord_data['email']}}</p>
                 </div>
                 {%  if data.user_data.id == data.landlord_data.landlord_id and data.user_data.landlord %}
-                <a href="your-link-here" class="btn btn-primary w-100 ">Edit Property</a>
+                <a href="{{ url_for('edit_property_img', id=data.id) }}" class="btn btn-primary w-100 ">Edit Property</a>
                 <a href="your-link-here" class="btn btn-danger my-1 w-100 ">Delete Property</a>
                 {% else %}
                 <a href="your-link-here" class="btn btn-primary w-100 ">Maintenance Request</a>
