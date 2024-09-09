@@ -1090,8 +1090,50 @@ def edit_property():
     
 
 @app.route('/edit_user_info', methods=['POST', "GET"])
+@token_required
 def edit_user_info():
-    return render_template("edit_user_info.html")
+    if request.method == 'POST':
+        user_id = request.args.get('id')
+        access_token = request.cookies.get('access_token')
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+        first_name = request.form.get("firstName")
+        last_name = request.form.get("lastName")
+        email = request.form.get("email")
+        phone_number = request.form.get('phone')
+
+        data = {
+            "first_name": first_name,
+            "last_name": last_name,
+            "email": email,
+            "phone_number": phone_number,
+            "profile_pic": session.get('profile_pic')
+        }
+
+        res = requests.put(f"{host}/v1/users/{user_id}", headers=headers, json=data)
+        if res.status_code == 200:
+            session['first_name'] = res.json().get('first_name')
+            session['last_name'] = res.json().get('last_name')
+            session['email'] = res.json().get('email')
+            session['phone_number'] = res.json().get('phone_number')
+            return redirect(url_for('dashboard'))
+        else:
+            return {
+            "status_code": str(res.status_code),
+            "detail": str(res.text)
+        }
+
+
+    data = {
+        "id": session.get('user_id'),
+        "first_name": session.get('first_name'),
+        "last_name": session.get('last_name'),
+        "email": session.get('email'),
+        "phone_number": session.get('phone_number')
+    }
+    return render_template("edit_user_info.html", data=data)
 
 
 @app.route('/forgot_password', methods=['POST', "GET"])
