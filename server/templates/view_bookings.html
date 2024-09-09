@@ -385,9 +385,7 @@
                     <!-- <li class="nav-item">
                         <a class="nav-link" href="#">Profile</a>
                     </li> -->
-                    <li class="nav-item">
-                        <a href="#"><img src="./pp.PNG" alt="Profile" class="profile-pic"></a>
-                    </li>
+                   
                     <li class="nav-item">
                         <button class="btn btn-logout">Logout</button>
                     </li>
@@ -402,63 +400,40 @@
         <div class="square"></div>
         <div class="square"></div>
         <h1>Bookings</h1>
-        <p class="lead">View your properties at a glance</p>
+        <p class="lead">View your bookings at a glance</p>
     </div>
     
     <main class="container">
         <section class="summary">
             <div class="summary-item" aria-label="Total Bookings">
-                <h3>15</h3>
+                <h3>{{data.bookings_length}}</h3>
                 <p>Total Bookings</p>
             </div>
-            <div class="summary-item" aria-label="Total Properties">
+            <!-- <div class="summary-item" aria-label="Total Properties">
                 <h3>5</h3>
                 <p>Properties</p>
-            </div>
+            </div> -->
             
         </section>
 
         <section class="bookings">
-            <a href="#">
+            {% for booking in data['items'] %}
+            <a href="{{ url_for('booking', pid=booking.property_id, bid=booking.id)  }}">
             <article class="booking-card">
                 
                 <div class="property-info">
-                    <h3>Sunny Downtown Loft</h3>
-                    <p>123 Main St, New York, NY 10001</p>
+                    <h3>{{booking.property_address}}</h3>
+                    <p>{{booking.city}}, {{booking.state}}</p>
                 </div>
                 <div class="client-info">
-                    <p class="client-name">Sarah Johnson</p>
-                    <p class="booking-date">Aug 20 - Aug 25, 2024</p>
+                    <p class="client-name">{{booking.name}}</p>
+                    <p class="booking-date">{{booking.viewing_date}}, {{booking.viewing_time}}</p>
                 </div>
                
             </article>
             </a>
+            {% endfor %}
 
-            <a href="#">
-            <article class="booking-card">
-                <div class="property-info">
-                    <h3>Beachfront Villa</h3>
-                    <p>456 Ocean Dr, Miami Beach, FL 33139</p>
-                </div>
-                <div class="client-info">
-                    <p class="client-name">Michael Chen</p>
-                    <p class="booking-date">Sep 5 - Sep 12, 2024</p>
-                </div>
-            </article>
-            </a>
-
-            <a href="#">
-            <article class="booking-card">
-                <div class="property-info">
-                    <h3>Mountain Retreat Cabin</h3>
-                    <p>789 Pine Rd, Aspen, CO 81611</p>
-                </div>
-                <div class="client-info">
-                    <p class="client-name">Emma Rodriguez</p>
-                    <p class="booking-date">Oct 10 - Oct 15, 2024</p>
-                </div>
-            </article>
-            </a>
         </section>
     </main>
 

@@ -881,8 +881,30 @@ def user_property():
 
    
 @app.route('/view_bookings', methods=['POST', "GET"])
+@token_required
 def view_bookings():
-    return render_template("view_bookings.html")
+    access_token = request.cookies.get('access_token')
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+    res = requests.get(f"{host}/v1/bookings/", headers=headers)
+    if res.status_code == 200:
+        data = res.json()
+        data['bookings_length'] = len(data['items'])
+        for booking in data['items']:
+            prop_res = requests.get(f"{host}/v1/properties/{booking['property_id']}")
+            if prop_res.status_code == 200:
+                booking['property_address'] = prop_res.json().get('address')
+                booking['state'] = prop_res.json().get('state')
+                booking['city'] = prop_res.json().get('city')
+
+        return render_template("view_bookings.html", data=data)
+    else:
+        return {
+            "status_code": str(res.status_code),
+            "detail": str(res.text)
+        }
 
 
 @app.route('/view_maintenance_reqs', methods=['POST', "GET"])
