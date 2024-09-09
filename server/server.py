@@ -928,8 +928,37 @@ def payment_history():
 
 
 @app.route('/booking')
+@token_required
 def booking():
-    return render_template("booking.html")
+    property_id = request.args.get('pid')
+    booking_id = request.args.get('bid')
+    access_token = request.cookies.get('access_token')
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+
+    res = requests.get(f"{host}/v1/bookings/{property_id}/{booking_id}", headers=headers)
+    if res.status_code == 200:
+        data = res.json()
+        prop_resp = requests.get(f"{host}/v1/properties/{data['property_id']}")
+        if prop_resp.status_code == 200:
+            data['address'] = prop_resp.json().get('address')
+            data['state'] = prop_resp.json().get('state')
+            data['city'] = prop_resp.json().get('city')
+            return render_template("booking.html", data=data)
+        else:
+            return {
+            "status_code": str(prop_resp.status_code),
+            "detail": str(prop_resp.text)
+        }
+
+
+    else:
+        return {
+            "status_code": str(res.status_code),
+            "detail": str(res.text)
+        }
 
 
 @app.route('/maintenace_req')

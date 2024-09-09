@@ -248,10 +248,10 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Home</a>
+                        <a class="nav-link" href="{{ url_for('home') }}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Dashboard</a>
+                        <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
                     </li>
                     <!-- <li class="nav-item">
                         <a class="nav-link" href="#">About</a>
@@ -265,9 +265,7 @@
                     <li class="nav-item">
                         <button class="btn btn-signup">Sign Up</button>
                     </li> -->
-                     <li class="nav-item">
-                        <a href="#"><img src="./pp.PNG" alt="Profile" class="profile-pic"></a>
-                    </li>
+                     
                     <li class="nav-item">
                         <button class="btn btn-logout">Logout</button>
                     </li> 
@@ -288,31 +286,31 @@
         <div class="booking-info">
             <div class="info-item">
                 <div class="info-label">Name</div>
-                <div class="info-value">John Doe</div>
+                <div class="info-value">{{data.name}}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Email</div>
-                <div class="info-value">johndoe@example.com</div>
+                <div class="info-value">{{data.email}}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Phone Number</div>
-                <div class="info-value">+1 (555) 123-4567</div>
+                <div class="info-value">{{data.phone_number}}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Property</div>
-                <div class="info-value">123 Main St, New York, NY 10001</div>
+                <div class="info-value">{{data.address}}, {{data.city}}, {{data.state}}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Viewing Date</div>
-                <div class="info-value">August 25, 2024</div>
+                <div class="info-value">{{data.viewing_date}}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Viewing Time</div>
-                <div class="info-value">2:30 PM</div>
+                <div class="info-value">{{data.viewing_time}}</div>
             </div>
             <div class="notes">
                 <div class="notes-label">Notes</div>
-                <div class="notes-value">Client is interested in a 2-bedroom apartment with a view of the city. Prefers high floor.</div>
+                <div class="notes-value">{{data.notes}}</div>
             </div>
         </div>
     </div>
