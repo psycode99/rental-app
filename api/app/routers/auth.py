@@ -56,7 +56,6 @@ def verify_otp_pwd(data: schemas.VerifyOTP):
     return {"message": "success", "email":data.email}
 
 
-
 @router.put('/reset_password', status_code=status.HTTP_200_OK)
 def reset_pwd(data: schemas.ResetPassword, db: Session = Depends(database.get_db)):
     user_check = db.query(models.Users).filter_by(email=data.email).first()

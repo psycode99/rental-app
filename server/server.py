@@ -3,7 +3,7 @@ import requests
 import jwt
 from functools import wraps
 import humanize
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import pytz
 
 app = Flask(__name__)
@@ -1138,16 +1138,72 @@ def edit_user_info():
 
 @app.route('/forgot_password', methods=['POST', "GET"])
 def forgot_password():
+    if request.method == "POST":
+        email = request.form.get('email')
+        data = {
+            "email": email
+        }
+        res = requests.post(f'{host}/v1/auth/fpa_otp', json=data)
+        if res.status_code == 200:
+            data = res.json()
+            session['otp'] = data['otp']
+            session['otp_expiration'] = (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat()
+            session['otp_email'] = data['email']
+            return redirect(url_for('otp_pwd'))
     return render_template("fp_email.html")
 
 
 @app.route('/otp_pwd', methods=['POST', "GET"])
 def otp_pwd():
+    if request.method == "POST":
+        sent_otp = session.get('otp')
+        exp = session.get('otp_expiration')
+        email = session.get('otp_email')
+        print(sent_otp)
+        print(exp)
+        print(email)
+        if not sent_otp or not exp:
+            return "OTP does not exist or has expired", 400
+        
+        exp_time = datetime.fromisoformat(exp)
+        if datetime.now(timezone.utc) > exp_time:
+            session.pop('otp', None)
+            session.pop('otp_expiration_time', None)
+            return "OTP has expired"
+        
+        typed_otp = request.form.get('otp')
+        print(sent_otp)
+        print(exp)
+        print(email)
+        print(typed_otp)
+        data = {
+            "otp": sent_otp,
+            "typed_otp": typed_otp,
+            "email": email
+        }
+
+        res = requests.post(f'{host}/v1/auth/verify_otp', json=data)
+        if res.status_code == 200:
+            res_data = res.json()
+            session['otp_email'] = res_data['email']
+            session.pop('otp', None)
+            session.pop('otp_expiration_time', None)
+            return redirect(url_for('password_reset'))
     return render_template("fp_otp.html")
 
 
 @app.route('/password_reset', methods=['POST', "GET"])
 def password_reset():
+    if request.method == "POST":
+        new_password = request.form.get('password')
+        data = {
+            "email": session.get('otp_email'),
+            "new_password": new_password
+        }
+
+        res = requests.put(f"{host}/v1/auth/reset_password", json=data)
+        if res.status_code == 200:
+            return redirect(url_for('login'))
     return render_template("fp_password_reset.html")
 
 if __name__ == "__main__":

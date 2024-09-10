@@ -192,7 +192,7 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Home</a>
+                            <a class="nav-link" href="{{ url_for('home') }}">Home</a>
                         </li>
                     </ul>
                 </div>
@@ -201,7 +201,7 @@
 
         <div class="form-container">
             <h1 class="text-center">Forgot Password?</h1>
-            <form id="profileForm">
+            <form id="profileForm" action="forgot_password" method="post">
               <div class="mb-3">
                 <label for="email" class="form-label">Email</label>
                 <input type="email" id="email" name="email" class="form-control" required>
