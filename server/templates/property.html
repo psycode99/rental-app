@@ -394,8 +394,12 @@
                     <h5>{{landlord_data['first_name']}} {{ landlord_data['last_name'] }}</h5>
                     <p>Contact: {{landlord_data['email']}}</p>
                 </div>
+                {%  if data.user_data.landlord %}
+                <div></div>
+                {% else %}
                 <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#appointmentModal">Book a Tour</button>
                 <button class="btn btn-secondary w-100" data-bs-toggle="modal" data-bs-target={% if logged_in %}"#tenancyModal" {% else %} "#loginModal" {% endif %}>Apply for Tenancy</button>
+                {% endif %}
             </div>
         </div>
 
@@ -497,7 +501,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="notes" class="form-label">Notes</label>
-                            <textarea class="form-control" id="notes" rows="3"></textarea>
+                            <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </form>
@@ -687,23 +691,23 @@
                         </div>
                     <div class="mb-3">
                         <label for="firstName" class="form-label">First Name</label>
-                        <input type="text" class="form-control" id="firstName" value="John" disabled>
+                        <input type="text" class="form-control" id="firstName" value="{{data.user_data.first_name}}" disabled>
                     </div>
                     <div class="mb-3">
                         <label for="lastName" class="form-label">Last Name</label>
-                        <input type="text" class="form-control" id="lastName" value="Doe" disabled>
+                        <input type="text" class="form-control" id="lastName" value="{{data.user_data.last_name}}" disabled>
                     </div>
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" value="johndoe@example.com" disabled>
+                        <input type="email" class="form-control" id="email" value="{{data.user_data.email}}" disabled>
                     </div>
                     <div class="mb-3">
                         <label for="email" class="form-label">Phone Number</label>
-                        <input type="number" class="form-control" id="phone_no" value="090221223" disabled>
+                        <input type="number" class="form-control" id="phone_no" value="{{data.user_data.phone_number}}" disabled>
                     </div>
                     <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="isTenant" checked disabled>
-                        <label class="form-check-label" for="isTenant">Tenant</label>
+                        <input type="checkbox" class="form-check-input" id="isTenant" {% if data.user_data["landlord"] %} checked {% else %} unchecked {% endif %} disabled>
+                        <label class="form-check-label" for="isTenant">Landlord</label>
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label">Password</label>

@@ -458,6 +458,7 @@
 
     <div class="dashboard-content container">
         <div class="row g-4">
+            {% if data.landlord %}
             <div class="col-6 col-md-6">
                 <a href="{{url_for('add_property_img')}}">
                     <div class="dashboard-item">
@@ -466,6 +467,7 @@
                     </div>
                 </a>
             </div>
+            {% endif %}
             <div class="col-6 col-md-6">
                 <a href="{{url_for('view_properties')}}">
                     <div class="dashboard-item">
