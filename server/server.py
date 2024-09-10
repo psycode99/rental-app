@@ -5,14 +5,10 @@ from functools import wraps
 import humanize
 from datetime import datetime, timezone, timedelta
 import pytz
+from config import host, profile_pic_dir, property_uploads_dir, tenant_applications_dir, SECRET_KEY, flask_secret_key
 
 app = Flask(__name__)
-app.secret_key = "qwerty"
-host = "http://localhost:8000"
-profile_pic_dir = f"{host}/static/profile_pics/"
-tenant_applications_dir = f"{host}/static/tenant_applications/"
-property_uploads_dir = f"{host}/static/property_uploads/"
-SECRET_KEY = "Q4epX5pDd_kjTbvRZ-8tLrXjFskv45pXyswhv48H8oM"
+app.secret_key = flask_secret_key
 
 
 def humanize_res(data):
@@ -1159,9 +1155,7 @@ def otp_pwd():
         sent_otp = session.get('otp')
         exp = session.get('otp_expiration')
         email = session.get('otp_email')
-        print(sent_otp)
-        print(exp)
-        print(email)
+   
         if not sent_otp or not exp:
             return "OTP does not exist or has expired", 400
         
@@ -1172,10 +1166,7 @@ def otp_pwd():
             return "OTP has expired"
         
         typed_otp = request.form.get('otp')
-        print(sent_otp)
-        print(exp)
-        print(email)
-        print(typed_otp)
+   
         data = {
             "otp": sent_otp,
             "typed_otp": typed_otp,
@@ -1203,6 +1194,7 @@ def password_reset():
 
         res = requests.put(f"{host}/v1/auth/reset_password", json=data)
         if res.status_code == 200:
+            session.pop('otp_email', None)
             return redirect(url_for('login'))
     return render_template("fp_password_reset.html")
 

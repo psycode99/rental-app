@@ -394,7 +394,7 @@
                     <h5>{{landlord_data['first_name']}} {{ landlord_data['last_name'] }}</h5>
                     <p>Contact: {{landlord_data['email']}}</p>
                 </div>
-                {%  if data.user_data.landlord %}
+                {%  if logged_in and data.user_data.landlord %}
                 <div></div>
                 {% else %}
                 <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#appointmentModal">Book a Tour</button>
