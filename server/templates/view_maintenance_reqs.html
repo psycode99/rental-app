@@ -412,17 +412,15 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Home</a>
+                        <a class="nav-link" href="{{url_for('home')}}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Dashboard</a>
+                        <a class="nav-link" href="{{url_for('dashboard')}}">Dashboard</a>
                     </li>
                     <!-- <li class="nav-item">
                         <a class="nav-link" href="#">Profile</a>
                     </li> -->
-                    <li class="nav-item">
-                        <a href="#"><img src="./pp.PNG" alt="Profile" class="profile-pic"></a>
-                    </li>
+                    
                     <li class="nav-item">
                         <button class="btn btn-logout">Logout</button>
                     </li>
@@ -442,52 +440,35 @@
     
     
     <main class="container">
+        {% if not data.landlord %}
         <a href="#" class="request-card" data-bs-toggle="modal" data-bs-target="#createRequestModal">
             <span class="icon"><i class="fas fa-plus"></i></span>
             <span class="text">Make a Request</span>
             <span class="arrow"><i class="fas fa-arrow-right"></i>
             </span>
         </a>
+        {% endif %}
 
         <section class="bookings">
-            <a href="#">
-            <article class="booking-card">
-                <div class="property-info">
-                    <h3>Leaky Faucet</h3>
-                    <p>123 Main St, New York, NY 10001</p>
-                </div>
-                <div class="client-info">
-                    <p class="client-name">Sarah Johnson</p>
-                    <p class="booking-date">Aug 20, 2024</p>
-                </div>
-            </article>
-            </a>
+            {% if data['items'] %}
+                {% for maintenance_req in data['items'] %}
+                    <a href="#">
+                    <article class="booking-card">
+                        <div class="property-info">
+                            <h3>{{maintenance_req.description}}/h3>
+                            <p>{{maintenance_req.address}} {{maintenance_req.city}}, {{maintenance_req.state}}</p>
+                        </div>
+                        <div class="client-info">
+                            <p class="client-name">{{maintenance_req.tenant_firstname}} {{maintenance_req.tenant_lastname}}</p>
+                            <p class="booking-date">{{ maintenance_req.request_date}}</p>
+                        </div>
+                    </article>
+                    </a>
+                {% endfor %}
+            {% else %}
+            <p>No Maintenance Requests have been made yet</p>
+            {% endif %}
 
-            <a href="#">
-            <article class="booking-card">
-                <div class="property-info">
-                    <h3>Broken AC</h3>
-                    <p>456 Ocean Dr, Miami Beach, FL 33139</p>
-                </div>
-                <div class="client-info">
-                    <p class="client-name">Michael Chen</p>
-                    <p class="booking-date">Sep 5, 2024</p>
-                </div>
-            </article>
-            </a>
-
-            <a href="#">
-            <article class="booking-card">
-                <div class="property-info">
-                    <h3>Clogged Drain</h3>
-                    <p>789 Pine Rd, Aspen, CO 81611</p>
-                </div>
-                <div class="client-info">
-                    <p class="client-name">Emma Rodriguez</p>
-                    <p class="booking-date">Oct 10, 2024</p>
-                </div>
-            </article>
-            </a>
             
         </section>
         <div class="modal fade" id="createRequestModal" tabindex="-1" aria-labelledby="createRequestModalLabel" aria-hidden="true">
@@ -503,9 +484,11 @@
                                 <label for="propertySelect" class="form-label">Property</label>
                                 <select class="form-select" id="propertySelect" required>
                                     <option selected disabled value="">Select a property</option>
-                                    <option value="123 Main St, New York, NY 10001">123 Main St, New York, NY 10001</option>
-                                    <option value="456 Ocean Dr, Miami Beach, FL 33139">456 Ocean Dr, Miami Beach, FL 33139</option>
-                                    <option value="789 Pine Rd, Aspen, CO 81611">789 Pine Rd, Aspen, CO 81611</option>
+                                    {% if data.property_data %}
+                                        {% for property in data.property_data %}
+                                        <option value="{{property.id}}">{{property.address}}</option>
+                                        {% endfor %}
+                                    {% endif %}
                                 </select>
                             </div>
                             <div class="mb-3">

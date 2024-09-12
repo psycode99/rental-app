@@ -103,18 +103,22 @@ def upload_files_imgs(files: List[UploadFile] = File(...)):
 
 
 
-# @router.post("/upload_application")
-# async def upload_file_doc(file: UploadFile = File(...)):
-#     if not allowed_file(file.filename, TENANT_APPLICATIONS_ALLOWED_EXT):
-#         raise HTTPException(status_code=400, detail="File type not allowed")
+@router.post("/upload_application")
+def upload_file_doc(file: UploadFile = File(...)):
+    if not allowed_file(file.filename, TENANT_APPLICATIONS_ALLOWED_EXT):
+        raise HTTPException(status_code=400, detail="File type not allowed")
 
-#     unique_filename = get_unique_filename(file.filename)
-#     file_path = os.path.join(TENANT_APPLICATIONS, unique_filename)
+    unique_filename = get_unique_filename(file.filename)
+    file_path = os.path.join(TENANT_APPLICATIONS, unique_filename)
     
-#     with open(file_path, "wb") as f:
-#         f.write(await file.read())
+    try:
+        with open(file_path, "wb") as f:
+        # file.file is a SpooledTemporaryFile, which can be used directly
+            f.write(file.file.read())  # Read the contents of the file and write it to the disk
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"File upload failed: {e}")
 
-#     return JSONResponse(content={"message": "File successfully uploaded", "filename": unique_filename})
+    return JSONResponse(content={"message": "File successfully uploaded", "filename": unique_filename})
 
 
 

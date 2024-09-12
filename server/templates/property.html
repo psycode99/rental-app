@@ -550,7 +550,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form>
+                    <form action="{{ url_for('make_tenant_app', id=data.id) }}" method="post" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label for="first_name" class="form-label">First Name</label>
                             <input type="text" class="form-control" id="first_name" name="first_name" value="{% if logged_in %}{{ data['user_data']['first_name'] }}{% endif %}" required>
@@ -653,7 +653,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="file_upload" class="form-label">Upload Document</label>
-                            <input type="file" class="form-control" id="file_upload" name="file_upload" multiple accept=".pdf">
+                            <input type="file" class="form-control" id="file_upload" name="file_upload"  accept=".pdf">
                         </div>
                         
                         <div id="uploaded_files" class="card-container"></div>
@@ -782,92 +782,7 @@
 </footer>
 
 <script>
-    document.getElementById('file_upload').addEventListener('change', function(event) {
-        const uploadedFilesContainer = document.getElementById('uploaded_files');
-        const errorMessage = document.getElementById('error_message');
-        const maxFiles = 3;
-        const files = Array.from(event.target.files);
     
-        // Clear any previous error messages
-        errorMessage.style.display = 'none';
-    
-        // Validate file types and limit number of files
-        for (const file of files) {
-            if (file.type !== "application/pdf") {
-                errorMessage.textContent = 'Only PDF files are allowed.';
-                errorMessage.style.display = 'block';
-                event.target.value = ''; // Clear the file input
-                return;
-            }
-        }
-    
-        if (uploadedFilesContainer.children.length + files.length > maxFiles) {
-            errorMessage.textContent = `You can only upload a maximum of ${maxFiles} files.`;
-            errorMessage.style.display = 'block';
-            event.target.value = ''; // Clear the file input
-            return;
-        }
-    
-        files.forEach((file, index) => {
-            const fileCard = document.createElement('div');
-            fileCard.className = 'card card-file';
-            fileCard.setAttribute('data-bs-toggle', 'modal');
-            fileCard.setAttribute('data-bs-target', `#fileModal${uploadedFilesContainer.children.length + 1}`);
-    
-            const cardHeader = document.createElement('div');
-            cardHeader.className = 'card-header';
-    
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.textContent = file.name;
-    
-            cardHeader.appendChild(button);
-            fileCard.appendChild(cardHeader);
-            uploadedFilesContainer.appendChild(fileCard);
-    
-            // Create modals for PDF viewing using PDF.js
-            const modalHTML = `
-                <div class="modal fade" id="fileModal${uploadedFilesContainer.children.length}" tabindex="-1" aria-labelledby="fileModalLabel${uploadedFilesContainer.children.length}" aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="fileModalLabel${uploadedFilesContainer.children.length}">${file.name}</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div id="pdfViewer${uploadedFilesContainer.children.length}" class="pdfViewer"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.body.insertAdjacentHTML('beforeend', modalHTML);
-    
-            // Render the PDF file using PDF.js
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const pdfData = new Uint8Array(e.target.result);
-                const loadingTask = pdfjsLib.getDocument({ data: pdfData });
-                loadingTask.promise.then(function(pdf) {
-                    pdf.getPage(1).then(function(page) {
-                        const scale = 1.5;
-                        const viewport = page.getViewport({ scale });
-                        const canvas = document.createElement('canvas');
-                        const context = canvas.getContext('2d');
-                        canvas.height = viewport.height;
-                        canvas.width = viewport.width;
-                        page.render({ canvasContext: context, viewport: viewport }).promise.then(function() {
-                            document.getElementById(`pdfViewer${uploadedFilesContainer.children.length}`).appendChild(canvas);
-                        });
-                    });
-                });
-            };
-            reader.readAsArrayBuffer(file);
-        });
-    
-        // Clear the file input after processing
-        event.target.value = '';
-    });
 
     document.querySelector('.toggle-password').addEventListener('click', function (e) {
         const passwordInput = document.getElementById('password');

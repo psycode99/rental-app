@@ -797,9 +797,108 @@ def make_maintenance_req():
     pass
 
 
-@app.route('/make_tenant_app', methods=['POST', "GET"])
+@app.route('/make_tenant_app', methods=['POST'])
+@token_required
 def make_tenant_app():
-    pass
+    access_token = request.cookies.get('access_token')
+
+    property_id = request.args.get('id')
+    first_name = request.form.get('first_name')
+    last_name = request.form.get('last_name')
+    date_of_birth = request.form.get('date_of_birth')
+    national_identity_number = request.form.get('national_identity_number')
+    email_address = request.form.get('email_address')
+    phone_number = request.form.get('phone_number')
+    current_address = request.form.get('current_address')
+    previous_address = request.form.get('previous_address')
+    employer_name = request.form.get('employer_name')
+    job_title = request.form.get('job_title')
+    employment_duration = request.form.get('employment_duration')
+    monthly_income = request.form.get('monthly_income')
+    previous_landlord_name = request.form.get('previous_landlord_name')
+    previous_landlord_contact = request.form.get('previous_landlord_contact')
+    reason_for_moving = request.form.get('reason_for_moving')
+    personal_reference_name = request.form.get('personal_reference_name')
+    personal_reference_contact = request.form.get('personal_reference_contact')
+    professional_reference_name = request.form.get('professional_reference_name')
+    professional_reference_contact = request.form.get('professional_reference_contact')
+    application_date = request.form.get('application_date')
+    desired_move_in_date = request.form.get('desired_move_in_date')
+    criminal_record = request.form.get('criminal_record')
+    pets = request.form.get('pets')
+    number_of_occupants = request.form.get('number_of_occupants')
+    special_requests = request.form.get('special_requests')
+
+    # Handling file upload
+    file = request.files['file_upload']
+    filename = None
+    
+    if file:
+        print("yes")
+        files = {"file": (file.filename, file.stream, file.mimetype)}
+        try:
+            file_res = requests.post(f"{host}/v1/uploads/upload_application", files=files)
+            if file_res.status_code == 200:
+                filename = file_res.json().get('filename')
+                print(filename)
+            else:
+                return  {
+                    "status_code": file_res.status_code,
+                    "detail": file_res.text
+                }
+                
+        except requests.exceptions.RequestException as e:
+                flash(f"An error occurred: {e}")
+                return redirect(request.url)
+        
+    headers = {
+            'Authorization': f'Bearer {access_token}',
+            "Content-Type": "application/json"
+                        }
+
+    tenant_application =  {
+        "first_name": first_name,
+        "last_name": last_name,
+        "tenant_id": session.get('user_id', None),
+        "property_id": property_id,
+        "date_of_birth": date_of_birth,
+        "national_identity_number": national_identity_number,
+        "email_address": email_address,
+        "phone_number": phone_number,
+        "current_address": current_address,
+        "previous_address": previous_address,
+        "employer_name": employer_name,
+        "job_title": job_title,
+        "employment_duration": employment_duration,
+        "monthly_income": float(monthly_income),
+        "previous_landlord_name": previous_landlord_name,
+        "previous_landlord_contact": previous_landlord_contact,
+        "reason_for_moving": reason_for_moving,
+        "personal_reference_name": personal_reference_name,
+        "personal_reference_contact": personal_reference_contact,
+        "professional_reference_name": professional_reference_name,
+        "professional_reference_contact": professional_reference_contact,
+        "application_date": application_date,
+        "desired_move_in_date": desired_move_in_date,
+        "criminal_record": criminal_record,
+        "pets": pets,
+        "number_of_occupants": number_of_occupants,
+        "special_requests": special_requests,
+        "file_name": filename
+    }
+
+    try:
+        res = requests.post(f"{host}/v1/applications/{property_id}", headers=headers, json=tenant_application)
+        if res.status_code == 201:
+            return redirect(url_for('home'))
+        else:
+            return {
+                "status_code": res.status_code,
+                "detail": res.text
+            }
+    except requests.exceptions.RequestException as e:
+        flash(f"An error occurred: {e}")
+        return redirect(request.url)
 
 
 @app.route('/view_properties', methods=['POST', "GET"])
@@ -904,8 +1003,61 @@ def view_bookings():
 
 
 @app.route('/view_maintenance_reqs', methods=['POST', "GET"])
+@token_required
 def view_maintenance_reqs():
-    return render_template("view_maintenance_reqs.html")
+    access_token = request.cookies.get('access_token')
+    verify_AT = verify_token(access_token)
+    landlord = None
+    if verify_AT['landlord']:
+        landlord = True
+    else:
+        landlord = False
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+    prop_res = requests.get(f"{host}/v1/properties/user", headers=headers)
+    if prop_res.status_code == 200:
+        prop_data = prop_res.json().get('items')
+        prop_details = []
+        for prop in prop_data:
+            property_ = {"id": prop['id'], "address": prop['address']}
+            prop_details.append(property_)
+    else:
+         return {
+                    "status_code": prop_res.status_code,
+                    "detail": prop_res.text
+                }
+    res = requests.get(f"{host}/v1/maintenance_reqs/", headers=headers)
+    if res.status_code == 200:
+        data = res.json()
+        for mr in data['items']:
+            property_resp = requests.get(f"{host}/v1/properties/{mr['property_id']}")
+            if property_resp.status_code == 200:
+                mr['address'] = property_resp.json().get('address')
+                mr['city'] = property_resp.json().get('city')
+                mr['state'] = property_resp.json().get('state')
+            else:
+                return {
+                    "status_code": property_resp.status_code,
+                    "detail": property_resp.text
+                }
+            tenant_resp = requests.get(f"{host}/v1/users/tenants/{mr['tenant_id']}")
+            if tenant_resp.status_code == 200:
+                mr['tenant_firstname'] = tenant_resp.json().get('first_name')
+                mr['tenant_lastname'] = tenant_resp.json().get('last_name')
+            else:
+                 return {
+                    "status_code": tenant_resp.status_code,
+                    "detail": tenant_resp.text
+                }
+    elif res.status_code == 204:
+        data = {"message":"No Maintenance Request Made Yet", "items": []}
+
+    data['property_data'] = prop_details
+    data['landlord'] = landlord
+    return render_template("view_maintenance_reqs.html", data=data)
 
 
 @app.route('/view_tenant_apps', methods=['POST', "GET"])
@@ -958,11 +1110,13 @@ def booking():
 
 
 @app.route('/maintenace_req')
+@token_required
 def maintenance_req():
     return render_template("maintenance_req.html")
 
 
 @app.route('/tenant_app')
+@token_required
 def tenant_app():
     return render_template("tenant_app.html")
 
@@ -1132,6 +1286,18 @@ def edit_user_info():
     return render_template("edit_user_info.html", data=data)
 
 
+@app.route('/update_maintenance_req')
+@token_required
+def update_maintenance_req():
+    pass
+
+
+@app.route('/update_tenant_app')
+@token_required
+def update_tenant_application():
+    pass
+
+
 @app.route('/forgot_password', methods=['POST', "GET"])
 def forgot_password():
     if request.method == "POST":
@@ -1197,6 +1363,19 @@ def password_reset():
             session.pop('otp_email', None)
             return redirect(url_for('login'))
     return render_template("fp_password_reset.html")
+
+
+@app.route('/delete_property')
+@token_required
+def delete_property():
+    pass
+
+
+@app.route('/delete_user')
+@token_required
+def delete_user():
+    pass
+
 
 if __name__ == "__main__":
     app.run(debug=True)
