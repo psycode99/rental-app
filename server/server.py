@@ -834,7 +834,6 @@ def make_tenant_app():
     filename = None
     
     if file:
-        print("yes")
         files = {"file": (file.filename, file.stream, file.mimetype)}
         try:
             file_res = requests.post(f"{host}/v1/uploads/upload_application", files=files)
@@ -1061,8 +1060,31 @@ def view_maintenance_reqs():
 
 
 @app.route('/view_tenant_apps', methods=['POST', "GET"])
+@token_required
 def view_tenant_apps():
-    return render_template("view_tenant_apps.html")
+    access_token = request.cookies.get('access_token')
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+    res = requests.get(f"{host}/v1/applications/", headers=headers)
+    if res.status_code == 200:
+        data = res.json()
+        data['applications_length'] = len(data['items'])
+        for app in data['items']:
+            prop_res = requests.get(f"{host}/v1/properties/{app['property_id']}")
+            if prop_res.status_code == 200:
+                app['property_address'] = prop_res.json().get('address')
+                app['state'] = prop_res.json().get('state')
+                app['city'] = prop_res.json().get('city')
+
+        return render_template("view_tenant_apps.html", data=data)
+    else:
+        return {
+            "status_code": str(res.status_code),
+            "detail": str(res.text)
+        }
+   
 
 
 @app.route('/payments', methods=['POST', "GET"])

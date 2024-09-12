@@ -377,17 +377,15 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Home</a>
+                        <a class="nav-link" href="{{ url_for('home') }}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Dashboard</a>
+                        <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
                     </li>
                     <!-- <li class="nav-item">
                         <a class="nav-link" href="#">Profile</a>
                     </li> -->
-                    <li class="nav-item">
-                        <a href="#"><img src="./pp.PNG" alt="Profile" class="profile-pic"></a>
-                    </li>
+                   
                     <li class="nav-item">
                         <button class="btn btn-logout">Logout</button>
                     </li>
@@ -408,55 +406,36 @@
     <main class="container">
         <section class="summary">
             <div class="summary-item" aria-label="Total Bookings">
-                <h3>15</h3>
+                <h3>{{data.applications_length}}</h3>
                 <p>Total Applications</p>
             </div>
-            <div class="summary-item" aria-label="Total Properties">
+            <!-- <div class="summary-item" aria-label="Total Properties">
                 <h3>5</h3>
                 <p>Properties</p>
             </div>
-            
+             -->
         </section>
 
         <section class="bookings">
-            <a href="#">
-            <article class="booking-card">
-                <div class="property-info">
-                    <h3>Sunny Downtown Loft</h3>
-                    <p>123 Main St, New York, NY 10001</p>
-                </div>
-                <div class="client-info">
-                    <p class="client-name">Sarah Johnson</p>
-                    <p class="booking-date">Aug 25, 2024</p>
-                </div>
-            </article>
-            </a>
+            {% if data.items %}
+                {%  for app in data['items'] %}
+                    <a href="#">
+                    <article class="booking-card">
+                        <div class="property-info">
+                            <h3>{{app.property_address}}</h3>
+                            <p>{{app.city}}, {{app.state}}</p>
+                        </div>
+                        <div class="client-info">
+                            <p class="client-name">{{app.first_name}}, {{app.last_name}}</p>
+                            <p class="booking-date">{{app.application_date}}</p>
+                        </div>
+                    </article>
+                    </a>
+                {% endfor %}
+            {% else %}
+                <p>No Tenant Appplications Yet</p>
+            {% endif %}
 
-            <a href="#">
-            <article class="booking-card">
-                <div class="property-info">
-                    <h3>Beachfront Villa</h3>
-                    <p>456 Ocean Dr, Miami Beach, FL 33139</p>
-                </div>
-                <div class="client-info">
-                    <p class="client-name">Michael Chen</p>
-                    <p class="booking-date">Sep 12, 2024</p>
-                </div>
-            </article>
-            </a>
-
-            <a href="#">
-            <article class="booking-card">
-                <div class="property-info">
-                    <h3>Mountain Retreat Cabin</h3>
-                    <p>789 Pine Rd, Aspen, CO 81611</p>
-                </div>
-                <div class="client-info">
-                    <p class="client-name">Emma Rodriguez</p>
-                    <p class="booking-date">Oct 15, 2024</p>
-                </div>
-            </article>
-            </a>
         </section>
     </main>
 
