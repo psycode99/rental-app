@@ -455,8 +455,8 @@
                     <a href="#">
                     <article class="booking-card">
                         <div class="property-info">
-                            <h3>{{maintenance_req.description}}/h3>
-                            <p>{{maintenance_req.address}} {{maintenance_req.city}}, {{maintenance_req.state}}</p>
+                            <h3>{{maintenance_req.description}}</h3>
+                            <p>{{maintenance_req.address}}, {{maintenance_req.city}}, {{maintenance_req.state}}</p>
                         </div>
                         <div class="client-info">
                             <p class="client-name">{{maintenance_req.tenant_firstname}} {{maintenance_req.tenant_lastname}}</p>
@@ -479,11 +479,11 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <form>
+                        <form action="{{ url_for('make_maintenance_req') }}" method="post">
                             <div class="mb-3">
                                 <label for="propertySelect" class="form-label">Property</label>
-                                <select class="form-select" id="propertySelect" required>
-                                    <option selected disabled value="">Select a property</option>
+                                <select class="form-select" id="propertySelect" name="property" required>
+                                    <!-- <option selected disabled value="">Select a property</option> -->
                                     {% if data.property_data %}
                                         {% for property in data.property_data %}
                                         <option value="{{property.id}}">{{property.address}}</option>
@@ -493,18 +493,19 @@
                             </div>
                             <div class="mb-3">
                                 <label for="requestDate" class="form-label">Request Date</label>
-                                <input type="date" class="form-control" id="requestDate" required>
+                                <input type="date" class="form-control" id="requestDate" name="request_date" required>
                             </div>
                             <div class="mb-3">
                                 <label for="description" class="form-label">Description</label>
-                                <textarea class="form-control" id="description" rows="3" required></textarea>
+                                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Submit Request</button>
                             </div>
                         </form>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary">Submit Request</button>
-                    </div>
+                    
                 </div>
             </div>
         </div>

@@ -508,9 +508,12 @@
                 </div>
         
                 <div class="status-buttons">
-                    <a href="#" class="status-btn pending">Pending</a>
+                    {% if data.landlord %}
                     <a href="{{url_for('approve_tenant_app', pid=data.property_id, aid=data.id, tid=data.tenant_id)}}" class="status-btn approved">Approve</a>
                     <a href="#" class="status-btn btn btn-danger">Reject</a>
+                    {% else %}
+                    <a href="#" class="status-btn btn btn-primary">{{data.application_status}}</a>
+                    {% endif %}
                 </div>
             </div>
         </div>

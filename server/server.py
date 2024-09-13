@@ -792,10 +792,35 @@ def make_booking():
             }
     return redirect(url_for('property', id=property_id))
 
-@app.route('/make_maintenance_req', methods=['POST', "GET"])
-def make_maintenance_req():
-    pass
 
+@app.route('/make_maintenance_req', methods=['POST', "GET"])
+@token_required
+def make_maintenance_req():
+    if request.method == "POST":
+        token = request.cookies.get('access_token')
+        headers = {
+                        'Authorization': f'Bearer {token}',
+                        "Content-Type": "application/json"
+                        }
+        property_id = request.form.get('property')
+        request_date = request.form.get("request_date")
+        description = request.form.get("description")
+
+        data = {
+            "property_id": property_id,
+            "tenant_id": session.get('user_id'),
+            "request_date": request_date,
+            "description": description
+        }
+
+        res = requests.post(f"{host}/v1/maintenance_reqs/{property_id}", headers=headers, json=data)
+        if res.status_code == 201:
+            return redirect(url_for('view_maintenance_reqs'))
+        else:
+            return {
+                "status_code": res.status_code,
+                "detail": res.text
+            }
 
 @app.route('/make_tenant_app', methods=['POST'])
 @token_required
@@ -1086,7 +1111,6 @@ def view_tenant_apps():
         }
    
 
-
 @app.route('/payments', methods=['POST', "GET"])
 def payments():
     return render_template("payments.html")
@@ -1143,6 +1167,7 @@ def tenant_app():
     property_id = request.args.get('pid')
     application_id = request.args.get('tid')
     token = request.cookies.get('access_token')
+    t_v = verify_token(token)
 
     headers = {
             'Authorization': f'Bearer {token}',
@@ -1151,6 +1176,7 @@ def tenant_app():
     res = requests.get(f"{host}/v1/applications/{property_id}/{application_id}", headers=headers)
     if res.status_code == 200:
         data = res.json()
+        data['landlord'] = t_v['landlord']
         data['monthly_income'] = humanize.intcomma(data['monthly_income'])
         prop_resp = requests.get(f"{host}/v1/properties/{data['property_id']}")
         if prop_resp.status_code == 200:
@@ -1196,6 +1222,7 @@ def download_application(filename):
     except Exception as e:
         print(f"Error: {e}")
         abort(500)  # Internal Server Error if something goes wrong
+
 
 @app.route('/edit_property_img', methods=['POST', "GET"])
 @token_required
