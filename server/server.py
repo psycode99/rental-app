@@ -1368,10 +1368,32 @@ def update_maintenance_req():
     pass
 
 
-@app.route('/update_tenant_app')
+@app.route('/approve_tenant_app')
 @token_required
-def update_tenant_application():
-    pass
+def approve_tenant_app():
+    property_id = request.args.get('pid')
+    application_id = request.args.get('aid')
+    tenant_id = request.args.get('tid')
+
+    access_token = request.cookies.get('access_token')
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "tenant_id": tenant_id,
+        "application_status": "approved"
+    }
+
+    res = requests.put(f"{host}/v1/applications/{property_id}/{application_id}", headers=headers, json=data)
+    if res.status_code == 200:
+        return redirect(url_for('dashboard'))
+    else:
+        return {
+            "status_code": res.status_code,
+            "detail": res.text
+        }
 
 
 @app.route('/forgot_password', methods=['POST', "GET"])

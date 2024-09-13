@@ -291,6 +291,10 @@
             border: none;
         }
 
+        a{
+            text-decoration: none;
+        }
+
         .file-name {
             color: #999; /* Lighter color for less visibility */
             font-size: 12px; /* Reduce font size */
@@ -504,9 +508,9 @@
                 </div>
         
                 <div class="status-buttons">
-                    <button class="status-btn pending">Pending</button>
-                    <button class="status-btn approved">Approve</button>
-                    <button class="status-btn btn btn-danger">Reject</button>
+                    <a href="#" class="status-btn pending">Pending</a>
+                    <a href="{{url_for('approve_tenant_app', pid=data.property_id, aid=data.id, tid=data.tenant_id)}}" class="status-btn approved">Approve</a>
+                    <a href="#" class="status-btn btn btn-danger">Reject</a>
                 </div>
             </div>
         </div>
