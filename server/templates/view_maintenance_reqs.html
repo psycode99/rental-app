@@ -452,7 +452,7 @@
         <section class="bookings">
             {% if data['items'] %}
                 {% for maintenance_req in data['items'] %}
-                    <a href="#">
+                    <a href="{{url_for('maintenance_req', pid=maintenance_req.property_id, id=maintenance_req.id)}}">
                     <article class="booking-card">
                         <div class="property-info">
                             <h3>{{maintenance_req.description}}</h3>

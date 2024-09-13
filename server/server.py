@@ -1158,7 +1158,37 @@ def booking():
 @app.route('/maintenace_req')
 @token_required
 def maintenance_req():
-    return render_template("maintenance_req.html")
+    property_id = request.args.get('pid')
+    booking_id = request.args.get('id')
+    access_token = request.cookies.get('access_token')
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+
+    res = requests.get(f"{host}/v1/maintenance_reqs/{property_id}/{booking_id}", headers=headers)
+    if res.status_code == 200:
+        data = res.json()
+        data['first_name'] = data['tenant']['first_name']
+        data['last_name'] = data['tenant']['last_name']
+        prop_resp = requests.get(f"{host}/v1/properties/{data['property_id']}")
+        if prop_resp.status_code == 200:
+            data['address'] = prop_resp.json().get('address')
+            data['state'] = prop_resp.json().get('state')
+            data['city'] = prop_resp.json().get('city')
+            return render_template("maintenance_req.html", data=data)
+        else:
+            return {
+            "status_code": str(prop_resp.status_code),
+            "detail": str(prop_resp.text)
+        }
+
+
+    else:
+        return {
+            "status_code": str(res.status_code),
+            "detail": str(res.text)
+        }
 
 
 @app.route('/tenant_app', methods=['GET'])
@@ -1501,6 +1531,17 @@ def delete_property():
 def delete_user():
     pass
 
+
+@app.route('/logout')
+def logout():
+    # Clear all session data (user metadata like id, name, etc.)
+    session.clear()
+
+    # Optionally, remove the access_token from cookies as well
+    resp = make_response(redirect('/login'))
+    resp.set_cookie('access_token', '', expires=0)  # Clear the JWT token from cookies
+    
+    return resp
 
 if __name__ == "__main__":
     app.run(debug=True)

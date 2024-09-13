@@ -288,26 +288,12 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Home</a>
+                        <a class="nav-link" href="{{url_for('home')}}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Dashboard</a>
+                        <a class="nav-link" href="{{url_for('dashboard')}}">Dashboard</a>
                     </li>
-                    <!-- <li class="nav-item">
-                        <a class="nav-link" href="#">About</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Contact</a>
-                    </li>
-                    <li class="nav-item">
-                        <button class="btn btn-login" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="btn btn-signup">Sign Up</button>
-                    </li> -->
-                     <li class="nav-item">
-                        <a href="#"><img src="./pp.PNG" alt="Profile" class="profile-pic"></a>
-                    </li>
+                   
                     <li class="nav-item">
                         <button class="btn btn-logout">Logout</button>
                     </li> 
@@ -328,19 +314,19 @@
             <div class="request-info">
                 <div class="info-item">
                     <div class="info-label">Tenant Name</div>
-                    <div class="info-value">Jane Smith</div>
+                    <div class="info-value">{{data.first_name}} {{data.last_name}}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Property Name</div>
-                    <div class="info-value">Sunset Apartments</div>
+                    <div class="info-value">{{data.address}}, {{data.city}}, {{data.state}}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Request Date</div>
-                    <div class="info-value">August 20, 2024</div>
+                    <div class="info-value">{{data.request_date}}</div>
                 </div>
                 <div class="description">
                     <div class="description-label">Description</div>
-                    <div class="description-value">The kitchen sink is leaking and there's water accumulating under the cabinet. Please fix as soon as possible.</div>
+                    <div class="description-value">{{data.description}}</div>
                 </div>
             </div>
             <div class="status-buttons">
