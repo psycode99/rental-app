@@ -290,6 +290,29 @@
             height: 100%;
             border: none;
         }
+
+        .file-name {
+            color: #999; /* Lighter color for less visibility */
+            font-size: 12px; /* Reduce font size */
+            text-decoration: none; /* Remove underline */
+            overflow: hidden; /* Prevent overflow */
+            white-space: nowrap; /* Prevent text from wrapping */
+            text-overflow: ellipsis; /* Add ellipsis (...) for overflow */
+            display: block;
+            width: 100%; /* Ensure it spans the width of the box */
+          }
+        
+          .file-container {
+            border: 1px solid #e0e0e0;
+            padding: 10px;
+            width: 150px;
+            height: 100px;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f9f9f9;
+          }
     </style>
 </head>
 
@@ -305,14 +328,12 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Home</a>
+                            <a class="nav-link" href="{{url_for('home')}}">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Dashboard</a>
+                            <a class="nav-link" href="{{url_for('dashboard')}}">Dashboard</a>
                         </li>
-                        <li class="nav-item">
-                            <a href="#"><img src="./pp.PNG" alt="Profile" class="profile-pic"></a>
-                        </li>
+                       
                         <li class="nav-item">
                             <button class="btn btn-logout">Logout</button>
                         </li>
@@ -320,199 +341,176 @@
                 </div>
             </div>
         </nav>
-
         <div class="card">
-            <div class="icon-placeholder">
-                📋
-            </div>
+            <div class="icon-placeholder">📋</div>
             <div class="application-info">
+                
+                <!-- Personal Information Section -->
                 <div class="section">
                     <h2 class="section-title">Personal Information</h2>
                     <div class="info-grid">
                         <div class="info-item">
                             <div class="info-label">Name</div>
-                            <div class="info-value">John Doe</div>
+                            <div class="info-value">{{data.first_name}} {{data.last_name}}</div>
                         </div>
                         <div class="info-item">
                             <div class="info-label">Date of Birth</div>
-                            <div class="info-value">1990-05-15</div>
+                            <div class="info-value">{{data.date_of_birth}}</div>
                         </div>
                         <div class="info-item">
                             <div class="info-label">National ID</div>
-                            <div class="info-value">12345678901</div>
+                            <div class="info-value">{{data.national_identity_number}}</div>
                         </div>
                         <div class="info-item">
                             <div class="info-label">Email</div>
-                            <div class="info-value">john.doe@example.com</div>
+                            <div class="info-value">{{data.email_address}}</div>
                         </div>
                         <div class="info-item">
                             <div class="info-label">Phone</div>
-                            <div class="info-value">+1 (555) 123-4567</div>
+                            <div class="info-value">{{data.phone_number}}</div>
                         </div>
                     </div>
                 </div>
-
+        
+                <!-- Property Information Section -->
                 <div class="section">
-                    <h2 class="section-title">Address Information</h2>
+                    <h2 class="section-title">Property Information</h2>
                     <div class="info-grid">
                         <div class="info-item">
-                            <div class="info-label">Current Address</div>
-                            <div class="info-value">123 Main St, City, State 12345</div>
+                            <div class="info-label">Property Address</div>
+                            <div class="info-value">{{data.address}}</div>
                         </div>
                         <div class="info-item">
-                            <div class="info-label">Previous Address</div>
-                            <div class="info-value">456 Elm St, Town, State 67890</div>
+                            <div class="info-label">State</div>
+                            <div class="info-value">{{data.state}}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">City</div>
+                            <div class="info-value">{{data.city}}</div>
                         </div>
                     </div>
                 </div>
-
+        
+                <!-- Employment Information Section -->
                 <div class="section">
                     <h2 class="section-title">Employment Information</h2>
                     <div class="info-grid">
                         <div class="info-item">
                             <div class="info-label">Employer</div>
-                            <div class="info-value">ABC Company</div>
+                            <div class="info-value">{{data.employer_name}}</div>
                         </div>
                         <div class="info-item">
                             <div class="info-label">Job Title</div>
-                            <div class="info-value">Software Engineer</div>
+                            <div class="info-value">{{data.job_title}}</div>
                         </div>
                         <div class="info-item">
                             <div class="info-label">Employment Duration</div>
-                            <div class="info-value">3 years</div>
+                            <div class="info-value">{{data.employment_duration}} months</div>
                         </div>
                         <div class="info-item">
                             <div class="info-label">Monthly Income</div>
-                            <div class="info-value">$5,000</div>
+                            <div class="info-value">₦{{data.monthly_income}}</div>
                         </div>
                     </div>
                 </div>
-
+        
+                <!-- Address Information Section -->
+                <div class="section">
+                    <h2 class="section-title">Address Information</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Current Address</div>
+                            <div class="info-value">{{data.current_address}}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Previous Address</div>
+                            <div class="info-value">{{data.previous_address}}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Reason for Moving</div>
+                            <div class="info-value">{{data.reason_for_moving}}</div>
+                        </div>
+                    </div>
+                </div>
+        
+                <!-- References Section -->
                 <div class="section">
                     <h2 class="section-title">References</h2>
                     <div class="info-grid">
                         <div class="info-item">
                             <div class="info-label">Previous Landlord</div>
-                            <div class="info-value">Jane Smith</div>
+                            <div class="info-value">{{data.previous_landlord_name}}</div>
                         </div>
                         <div class="info-item">
                             <div class="info-label">Landlord Contact</div>
-                            <div class="info-value">+1 (555) 987-6543</div>
+                            <div class="info-value">{{data.previous_landlord_contact}}</div>
                         </div>
                         <div class="info-item">
                             <div class="info-label">Personal Reference</div>
-                            <div class="info-value">Mike Johnson</div>
+                            <div class="info-value">{{data.personal_reference_name}}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Personal Reference Contact</div>
+                            <div class="info-value">{{data.personal_reference_contact}}</div>
                         </div>
                         <div class="info-item">
                             <div class="info-label">Professional Reference</div>
-                            <div class="info-value">Sarah Brown</div>
+                            <div class="info-value">{{data.professional_reference_name}}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Professional Reference Contact</div>
+                            <div class="info-value">{{data.professional_reference_contact}}</div>
                         </div>
                     </div>
                 </div>
-
+        
+                <!-- Application Details Section -->
                 <div class="section">
                     <h2 class="section-title">Application Details</h2>
                     <div class="info-grid">
                         <div class="info-item">
                             <div class="info-label">Application Date</div>
-                            <div class="info-value">2024-08-01</div>
+                            <div class="info-value">{{data.application_date}}</div>
                         </div>
                         <div class="info-item">
                             <div class="info-label">Desired Move-in Date</div>
-                            <div class="info-value">2024-09-01</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Property ID</div>
-                            <div class="info-value">12345</div>
+                            <div class="info-value">{{data.desired_move_in_date}}</div>
                         </div>
                         <div class="info-item">
                             <div class="info-label">Number of Occupants</div>
-                            <div class="info-value">2</div>
+                            <div class="info-value">{{data.number_of_occupants}}</div>
                         </div>
                         <div class="info-item">
                             <div class="info-label">Pets</div>
-                            <div class="info-value">1 cat</div>
+                            <div class="info-value">{{data.pets}}</div>
                         </div>
                         <div class="info-item">
                             <div class="info-label">Criminal Record</div>
-                            <div class="info-value">None</div>
+                            <div class="info-value">{{data.criminal_record}}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Special Requests</div>
+                            <div class="info-value">{{data.special_requests}}</div>
                         </div>
                     </div>
                 </div>
-
+        
+                <!-- File Uploads Section -->
                 <div class="section">
                     <h2 class="section-title">File Uploads</h2>
-                    <div class="card-container">
-                        <!-- Sample File Upload Cards -->
-                        <div class="card card-file" data-bs-toggle="modal" data-bs-target="#fileModal1">
-                            <div class="card-header">
-                                <button type="button">Document 1.pdf</button>
-                            </div>
-                        </div>
-                        <div class="card card-file" data-bs-toggle="modal" data-bs-target="#fileModal2">
-                            <div class="card-header">
-                                <button type="button">Document 2.jpg</button>
-                            </div>
-                        </div>
-                        <div class="card card-file" data-bs-toggle="modal" data-bs-target="#fileModal3">
-                            <div class="card-header">
-                                <button type="button">Document 3.pdf</button>
-                            </div>
-                        </div>
+                    <div class="file-container">
+                     <a href="{{url_for('download_application', filename=data.file_name)}}" class="file-name">{{data.file_name}}</a>
                     </div>
                 </div>
-                
-                <!-- Modal for File 1 -->
-                <div class="modal fade" id="fileModal1" tabindex="-1" aria-labelledby="fileModalLabel1" aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="fileModalLabel1">Document 1.pdf</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="pdf-container" id="pdfViewer1"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Modal for File 2 -->
-                <div class="modal fade" id="fileModal2" tabindex="-1" aria-labelledby="fileModalLabel2" aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="fileModalLabel2">Document 2.jpg</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <img src="path/to/document2.jpg" alt="Document 2" style="width: 100%; height: auto;">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Modal for File 3 -->
-                <div class="modal fade" id="fileModal3" tabindex="-1" aria-labelledby="fileModalLabel3" aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="fileModalLabel3">Document 3.pdf</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="pdf-container" id="pdfViewer3"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+        
                 <div class="status-buttons">
                     <button class="status-btn pending">Pending</button>
-                    <button class="status-btn approved">Approved</button>
+                    <button class="status-btn approved">Approve</button>
+                    <button class="status-btn btn btn-danger">Reject</button>
                 </div>
             </div>
         </div>
+        
 
         <footer class="footer">
             <div class="container">

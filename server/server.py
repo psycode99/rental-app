@@ -1137,11 +1137,65 @@ def maintenance_req():
     return render_template("maintenance_req.html")
 
 
-@app.route('/tenant_app')
+@app.route('/tenant_app', methods=['GET'])
 @token_required
 def tenant_app():
-    return render_template("tenant_app.html")
+    property_id = request.args.get('pid')
+    application_id = request.args.get('tid')
+    token = request.cookies.get('access_token')
 
+    headers = {
+            'Authorization': f'Bearer {token}',
+            "Content-Type": "application/json"
+            }
+    res = requests.get(f"{host}/v1/applications/{property_id}/{application_id}", headers=headers)
+    if res.status_code == 200:
+        data = res.json()
+        data['monthly_income'] = humanize.intcomma(data['monthly_income'])
+        prop_resp = requests.get(f"{host}/v1/properties/{data['property_id']}")
+        if prop_resp.status_code == 200:
+            data['address'] = prop_resp.json().get('address')
+            data['state'] = prop_resp.json().get('state')
+            data['city'] = prop_resp.json().get('city')
+            return render_template("tenant_app.html", data=data)
+        else:
+            return {
+            "status_code": str(prop_resp.status_code),
+            "detail": str(prop_resp.text)
+        }
+       
+    else:
+        return  {
+                    "status_code": res.status_code,
+                    "detail": res.text
+                }
+
+
+@app.route('/download/<filename>', methods=['GET'])
+@token_required
+def download_application(filename):
+    try:
+        # Make a GET request to the FastAPI server to retrieve the file
+        fastapi_url = f"{tenant_applications_dir}/{filename}"
+        response = requests.get(fastapi_url, stream=True)
+        
+        if response.status_code == 404:
+            abort(404)  # File not found on FastAPI server
+        elif response.status_code != 200:
+            abort(500)  # Handle any other server error
+
+        # Serve the file to the client
+        return Response(
+            response.iter_content(chunk_size=8192),
+            content_type=response.headers['Content-Type'],
+            headers={
+                'Content-Disposition': f'attachment;filename={filename}'
+            }
+        )
+
+    except Exception as e:
+        print(f"Error: {e}")
+        abort(500)  # Internal Server Error if something goes wrong
 
 @app.route('/edit_property_img', methods=['POST', "GET"])
 @token_required

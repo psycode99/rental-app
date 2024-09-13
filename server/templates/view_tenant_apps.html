@@ -419,7 +419,7 @@
         <section class="bookings">
             {% if data.items %}
                 {%  for app in data['items'] %}
-                    <a href="#">
+                    <a href="{{ url_for('tenant_app', pid=app.property_id, tid=app.id)}}">
                     <article class="booking-card">
                         <div class="property-info">
                             <h3>{{app.property_address}}</h3>
