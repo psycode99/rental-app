@@ -439,8 +439,8 @@
                         <a href="#"><img src="{{data['img_path']}}{{data['profile_pic']}}" alt="Profile" class="profile-pic" data-bs-toggle="modal" data-bs-target="#userDetailsModal"></a>
                     </li>
                     <li class="nav-item">
-                        <button class="btn btn-logout">Logout</button>
-                    </li>
+                        <a href="{{url_for('logout')}}" class="btn btn-logout">Logout</a>
+                    </li> 
                 </ul>
             </div>
         </div>
@@ -452,7 +452,7 @@
         <div class="square"></div>
         <div class="square"></div>
         <h1>Welcome Back, {{data['first_name']}}</h1>
-        <p class="lead">Your properties and bookings at a glance</p>
+        <p class="lead">Your Overview at a Glance</p>
     </div>
     
 
@@ -481,7 +481,7 @@
                     <div class="dashboard-item">
                         <i class="fas fa-calendar-alt"></i>
                         <p>Bookings</p>
-                        <div class="notification-circle">3</div>
+                        <!-- <div class="notification-circle">3</div> -->
                     </div>
                 </a>
             </div>
@@ -490,7 +490,7 @@
                     <div class="dashboard-item">
                         <i class="fas fa-tools"></i>
                         <p>Maintenance Requests</p>
-                        <div class="notification-circle">7</div>
+                        <!-- <div class="notification-circle">7</div> -->
                     </div>
                 </a>
             </div>
@@ -499,7 +499,7 @@
                     <div class="dashboard-item">
                         <i class="fas fa-file-alt"></i>
                         <p>Tenant Applications</p>
-                        <div class="notification-circle">5</div>
+                        <!-- <div class="notification-circle">5</div> -->
                     </div>
                 </a>
             </div>
@@ -508,7 +508,7 @@
                     <div class="dashboard-item">
                         <i class="fas fa-money-bill-wave"></i>
                         <p>Payments</p>
-                        <div class="notification-circle">2</div>
+                        <!-- <div class="notification-circle">2</div> -->
                     </div>
                 </a>
             </div>
@@ -517,39 +517,7 @@
 </div>
 
     
-
-    <footer class="footer">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4 mb-3 mb-md-0">
-                    <h5>RENTLY</h5>
-                    <p>Your trusted partner in finding the perfect rental property.</p>
-                </div>
-                <div class="col-md-4 mb-3 mb-md-0">
-                    <h5>Quick Links</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="#">Home</a></li>
-                        <li><a href="#">About</a></li>
-                        <li><a href="#">Contact</a></li>
-                        <li><a href="#">Terms of Service</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-4 mb-3 mb-md-0">
-                    <h5>Follow Us</h5>
-                    <div class="social-links">
-                        <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
-                    </div>
-                </div>
-            </div>
-            <div class="text-center mt-4">
-                <p>&copy; 2024 RENTLY. All Rights Reserved.</p>
-            </div>
-        </div>
-    </footer>
+{%  include "./partials/_footer.html" %}
 
       <!-- Bottom Navigation -->
     {% if logged_in %}

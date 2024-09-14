@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rently - Login</title>
+    <title>Rently | Login</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -49,37 +49,49 @@
         .center-form-container {
             min-height: 100vh;
         }
+        .alert {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .alert .close {
+            font-size: 1.4rem;
+            background: none;
+            border: none;
+            outline: none;
+            color: #000;
+            cursor: pointer;
+        }
+
+        /* Ensures the alert dismisses via bootstrap when the 'x' is clicked */
+        .alert .close:focus {
+            outline: none;
+        }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #33ccff;">
-        <div class="container">
-            <a class="navbar-brand" href="#">RENTLY</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-                <ul class="navbar-nav align-items-center">
-                    <li class="nav-item">
-                        <a class="nav-link text-white" href="{{url_for('home')}}">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-white" href="#">About</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-white" href="#">Contact</a>
-                    </li>
-                    <li class="nav-item ms-2">
-                        <a href="#" class="btn btn-signup">Sign Up</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    {% include "./partials/_sl_navbar.html" %}
 
     <div class="container center-form-container d-flex align-items-center justify-content-center">
         <div class="row justify-content-center w-100">
             <div class="col-md-6 col-lg-5">
+                {% with messages = get_flashed_messages(with_categories=True) %}
+                {% if messages %}
+                    <div class="flash-messages-container">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'info' }} alert-dismissible fade show" role="alert">
+                                <strong>{{ message }}</strong>
+                                
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
                 <div class="card shadow">
                     <div class="card-body p-5">
                         <h2 class="text-center mb-4" style="color: #33ccff;">LOGIN</h2>
@@ -104,5 +116,7 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+
 </body>
 </html>

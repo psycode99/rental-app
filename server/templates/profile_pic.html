@@ -167,7 +167,7 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <div class="navbar-nav ms-auto">
-                    <a href="#" class="nav-link">Home</a>
+                    <a href="{{url_for('home')}}" class="nav-link">Home</a>
                     <a href="#" class="nav-link">About</a>
                     <a href="#" class="nav-link">Contact</a>
                 </div>
@@ -185,7 +185,7 @@
         </div>
         <div class="btn-group">
             <a href="{{url_for('profile_pic')}}"><button class="btn btn-signup"><i class="fas fa-upload"></i>Sign Up</button></a>
-            <button class="btn btn-skip"><i class="fas fa-arrow-right"></i>Skip</button>
+            <a  href="{{url_for('login')}}" class="btn btn-skip"><i class="fas fa-arrow-right"></i>Skip</a>
         </div>
     </form>
     </div>

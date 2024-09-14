@@ -117,36 +117,37 @@ def home():
         size = 1
 
     properties = requests.get(f'{host}/v1/properties/?page={page}&size={size}')
-    if properties.status_code == 200:
+    if properties.status_code == 200 or properties.status_code == 204:
         properties_json = properties.json()
         properties_json['property_imgs'] = property_uploads_dir
-        for prop in properties_json['items']:
-            price = prop['price']
-            bathrooms = prop['bathrooms']
-            if price.is_integer():
-                price = int(price)
-            
-            if bathrooms.is_integer():
-                bathrooms = int(bathrooms)
+        if properties.status_code == 200:
+            for prop in properties_json['items']:
+                price = prop['price']
+                bathrooms = prop['bathrooms']
+                if price.is_integer():
+                    price = int(price)
+                
+                if bathrooms.is_integer():
+                    bathrooms = int(bathrooms)
 
-            humanized_price = humanize.intcomma(price)
-            prop['bathrooms'] = bathrooms
-            prop['price'] = humanized_price
-            # Assume data contains a 'timestamp' field in string format
-            timestamp_str = prop['created_at']
-            
-            # Convert the string to a datetime object
-            timestamp = datetime.fromisoformat(timestamp_str)
-            
-            # Optionally localize to a specific timezone if needed
-            timestamp = timestamp.astimezone(pytz.timezone("Africa/Lagos"))
+                humanized_price = humanize.intcomma(price)
+                prop['bathrooms'] = bathrooms
+                prop['price'] = humanized_price
+                # Assume data contains a 'timestamp' field in string format
+                timestamp_str = prop['created_at']
+                
+                # Convert the string to a datetime object
+                timestamp = datetime.fromisoformat(timestamp_str)
+                
+                # Optionally localize to a specific timezone if needed
+                timestamp = timestamp.astimezone(pytz.timezone("Africa/Lagos"))
 
-            # # Format the datetime as needed, e.g., 'Sep 2, 2024, 5:08 AM'
-            # formatted_time = timestamp.strftime('%b %d, %Y, %I:%M %p')
-            
-            # Alternatively, you can use humanize to make it more natural, like "2 days ago"
-            humanized_time = humanize.naturaltime(timestamp)
-            prop['created_at'] = humanized_time
+                # # Format the datetime as needed, e.g., 'Sep 2, 2024, 5:08 AM'
+                # formatted_time = timestamp.strftime('%b %d, %Y, %I:%M %p')
+                
+                # Alternatively, you can use humanize to make it more natural, like "2 days ago"
+                humanized_time = humanize.naturaltime(timestamp)
+                prop['created_at'] = humanized_time
             total = properties_json['total']
             current_page = properties_json['page']
             size = properties_json['size']
@@ -215,13 +216,10 @@ def login():
             # session['password'] = user_data['password']
             session['profile_pic'] = user_data["profile_pic"]
             session['profile_pic_path'] = profile_pic_dir
-            
             return response
-        else:
-            return {
-                "status_code": str(res.status_code),
-                "detail": str(res.json().get('detail'))
-            }
+        elif res.status_code == 403:
+            flash("Invalid Credentials", "error")
+            return redirect(url_for('login'))
 
     return render_template("login.html")
 
@@ -250,10 +248,8 @@ def signup():
             session['profile_pic'] = res.json().get('profile_pic')
             return redirect(url_for('profile_pic'))
         else:
-            return {
-                "status_code": str(res.status_code),
-                "detail": str(res.json().get('detail'))
-            }
+            flash(res.json().get('detail'), "error")
+            return redirect(url_for('signup'))
     return render_template("signup.html")
 
 
@@ -325,7 +321,6 @@ def profile_pic():
 @token_required
 def change_profile_pic():
     token = request.cookies.get('access_token')
-    print(token)
     if token and verify_token(token):
       
         token_verification = verify_token(token)
@@ -372,11 +367,13 @@ def change_profile_pic():
                         if res.status_code == 200:
                             # session['profile_pic'] = f"{profile_pic_dir}{filename}"
                             session['profile_pic'] = f"{filename}"
-                            return redirect(url_for('home'))
+                            return redirect(request.url)
                         else:
-                            return "image update failed"
+                            flash("profile picture update failed", "error")
+                            return redirect(request.url)
                     else:
-                        return "image uplaod failed"
+                        flash("image upload upload failed")
+                        return redirect(request.url)
                 except requests.exceptions.RequestException as e:
                     flash(f"An error occurred: {e}")
                     return redirect(request.url)
@@ -638,6 +635,7 @@ def search():
                 "status_code": str(res.status_code)
             }
 
+
 @app.route('/dashboard', methods=["POST", "GET"])
 @token_required
 def dashboard():
@@ -784,12 +782,11 @@ def make_booking():
 
         res = requests.post(f"{host}/v1/bookings/{property_id}", json=booking_data)
         if res.status_code == 201:
+            flash("Booking successfully sent", "success")
             return redirect(request.url)
         else:
-            return {
-                "status_code": str(res.status_code),
-                "detail": str(res.json().get('detail'))
-            }
+            flash(res.json().get('detail'), "error")
+            return redirect(request.url)
     return redirect(url_for('property', id=property_id))
 
 
@@ -815,12 +812,12 @@ def make_maintenance_req():
 
         res = requests.post(f"{host}/v1/maintenance_reqs/{property_id}", headers=headers, json=data)
         if res.status_code == 201:
+            flash("Maintenance Request Sent", "success")
             return redirect(url_for('view_maintenance_reqs'))
         else:
-            return {
-                "status_code": res.status_code,
-                "detail": res.text
-            }
+            flash(res.json().get('detail'), "error")
+            return redirect(url_for('view_maintenance_reqs'))
+
 
 @app.route('/make_tenant_app', methods=['POST'])
 @token_required
@@ -864,7 +861,6 @@ def make_tenant_app():
             file_res = requests.post(f"{host}/v1/uploads/upload_application", files=files)
             if file_res.status_code == 200:
                 filename = file_res.json().get('filename')
-                print(filename)
             else:
                 return  {
                     "status_code": file_res.status_code,
@@ -914,12 +910,11 @@ def make_tenant_app():
     try:
         res = requests.post(f"{host}/v1/applications/{property_id}", headers=headers, json=tenant_application)
         if res.status_code == 201:
-            return redirect(url_for('home'))
+            flash("Application sent", "success")
+            return redirect(url_for('property', id=property_id))
         else:
-            return {
-                "status_code": res.status_code,
-                "detail": res.text
-            }
+            flash(res.json().get('detail'), "success")
+            return redirect(url_for('property', id=property_id))
     except requests.exceptions.RequestException as e:
         flash(f"An error occurred: {e}")
         return redirect(request.url)
@@ -1113,7 +1108,7 @@ def view_tenant_apps():
 
 @app.route('/payments', methods=['POST', "GET"])
 def payments():
-    return render_template("payments.html")
+    return render_template("coming_soon.html")
 
 
 @app.route('/payment_history')
@@ -1516,6 +1511,7 @@ def password_reset():
         res = requests.put(f"{host}/v1/auth/reset_password", json=data)
         if res.status_code == 200:
             session.pop('otp_email', None)
+            flash("Password Reset Successful")
             return redirect(url_for('login'))
     return render_template("fp_password_reset.html")
 
@@ -1538,10 +1534,29 @@ def logout():
     session.clear()
 
     # Optionally, remove the access_token from cookies as well
-    resp = make_response(redirect('/login'))
+    resp = make_response(redirect('/'))
     resp.set_cookie('access_token', '', expires=0)  # Clear the JWT token from cookies
     
     return resp
+
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
+
+
+@app.route('/terms_of_service')
+def terms_of_service():
+    return render_template("terms_of_service.html")
+
+
+@app.route('/privacy_policy')
+def privacy_policy():
+    return render_template("privacy_policy.html")
 
 if __name__ == "__main__":
     app.run(debug=True)
