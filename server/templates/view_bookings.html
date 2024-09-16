@@ -379,6 +379,7 @@
     </div>
     
     <main class="container">
+        {% if data['items'] %}
         <section class="summary">
             <div class="summary-item" aria-label="Total Bookings">
                 <h3>{{data.bookings_length}}</h3>
@@ -392,7 +393,7 @@
         </section>
 
         <section class="bookings">
-            {% if data['items'] %}
+           
             {% for booking in data['items'] %}
             <a href="{{ url_for('booking', pid=booking.property_id, bid=booking.id)  }}">
             <article class="booking-card">
@@ -410,7 +411,7 @@
             </a>
             {% endfor %}
             {% else %}
-            <p>No Bookings Have Been Made Yet</p>
+            <p class="text-center fw-bold">No Bookings Have Been Made Yet</p>
             {% endif %}
 
         </section>

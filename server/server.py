@@ -116,12 +116,12 @@ def home():
         page = 1
         size = 1
 
-    properties = requests.get(f'{host}/v1/properties/?page={page}&size={size}')
-    if properties.status_code == 200 or properties.status_code == 204:
+    properties = requests.get(f'{host}/v1/properties/?page={page}&size=6')
+   
+    if properties.status_code != 204:
         properties_json = properties.json()
         properties_json['property_imgs'] = property_uploads_dir
-        if properties.status_code == 200:
-            for prop in properties_json['items']:
+        for prop in properties_json['items']:
                 price = prop['price']
                 bathrooms = prop['bathrooms']
                 if price.is_integer():
@@ -148,14 +148,17 @@ def home():
                 # Alternatively, you can use humanize to make it more natural, like "2 days ago"
                 humanized_time = humanize.naturaltime(timestamp)
                 prop['created_at'] = humanized_time
-            total = properties_json['total']
-            current_page = properties_json['page']
-            size = properties_json['size']
-            total_pages = properties_json['pages']
+        total = properties_json['total']
+        current_page = properties_json['page']
+        size = properties_json['size']
+        total_pages = properties_json['pages']
     else:
-        return {
-            "status_code": str(properties.status_code)
-        }
+        properties_json = None
+        total = 0
+        current_page = 0
+        size = 0
+        total_pages = 0
+        
     if token and verify_token(token):
          token_verification = verify_token(token)
          if token_verification['landlord']:
@@ -551,10 +554,39 @@ def search():
                                     size=size,
                                     total_pages=total_pages)
         else:
-            return {
-                "status_code": str(res.status_code),
-                "detail": str(res.text)
-            }
+            if token and verify_token(token):
+                logged_in = True
+                data = {}
+                data['items'] = None
+                profile_picture = f"{session['profile_pic_path']}{session['profile_pic']}"
+                data['first_name'] = session.get('first_name', None)
+                data['last_name'] = session.get("last_name", None)
+                data['email'] = session.get("email", None)
+                data['landlord'] = session.get("landlord", None)
+                data['phone_number'] = session.get("phone_number", None)
+                
+                return render_template(
+                                    'search.html',
+                                    data=data,
+                                    logged_in=logged_in,
+                                    profile_picture=profile_picture,
+                                    total=0,
+                                    page=0,
+                                    size=0,
+                                    total_pages=0)
+            else:
+                logged_in = False
+                data = {}
+                data['items'] = None
+                return render_template(
+                                    'search.html',
+                                    data=data,
+                                    logged_in=logged_in,
+                                    total=0,
+                                    page=0,
+                                    size=0,
+                                    total_pages=0)
+            
     if token and verify_token(token):
         logged_in = True
 
@@ -573,8 +605,8 @@ def search():
             "price": price,
             "status": status
         }
-        res = requests.post(f"{host}/v1/properties/search?page={page}&size=1", params=search_params)
-        if res.status_code == 200:
+        res = requests.post(f"{host}/v1/properties/search?page={page}&size=6", params=search_params)
+        if res.status_code != 204:
             data = res.json()
             data = data if data else None
             data['property_imgs'] = property_uploads_dir
@@ -595,9 +627,22 @@ def search():
                                     logged_in=logged_in,
                                     profile_picture=profile_picture)
         else:
-            return {
-                "status_code": str(res.status_code)
-            }
+            data = {}
+            data['items'] = None
+            data['first_name'] = session.get('first_name', None)
+            data['last_name'] = session.get("last_name", None)
+            data['email'] = session.get("email", None)
+            data['landlord'] = session.get("landlord", None)
+            data['phone_number'] = session.get("phone_number", None)
+            profile_picture = f"{session['profile_pic_path']}{session['profile_pic']}"
+            return render_template('search.html',
+                                    data=data,
+                                    total=total,
+                                    page=int(page),
+                                    size=size,
+                                    total_pages=total_pages,
+                                    logged_in=logged_in,
+                                    profile_picture=profile_picture)
     else:
         logged_in = False
 
@@ -617,8 +662,8 @@ def search():
             "price": price,
             "status": status
         }
-        res = requests.post(f"{host}/v1/properties/search?page={page}&size=1", params=search_params)
-        if res.status_code == 200:
+        res = requests.post(f"{host}/v1/properties/search?page={page}&size=6", params=search_params)
+        if res.status_code != 204:
             data = res.json()
             data = data if data else None
             data['property_imgs'] = property_uploads_dir
@@ -631,9 +676,16 @@ def search():
                                     total_pages=total_pages,
                                     logged_in=logged_in)
         else:
-            return {
-                "status_code": str(res.status_code)
-            }
+            data = {}
+            data['items'] = None
+            return render_template('search.html',
+                                    data=data,
+                                    total=total,
+                                    page=int(page),
+                                    size=size,
+                                    total_pages=total_pages,
+                                    logged_in=logged_in,
+                                    )
 
 
 @app.route('/dashboard', methods=["POST", "GET"])
@@ -1003,7 +1055,7 @@ def view_bookings():
         "Content-Type": "application/json"
     }
     res = requests.get(f"{host}/v1/bookings/", headers=headers)
-    if res.status_code == 200:
+    if res.status_code != 204:
         data = res.json()
         data['bookings_length'] = len(data['items'])
         for booking in data['items']:
@@ -1015,10 +1067,9 @@ def view_bookings():
 
         return render_template("view_bookings.html", data=data)
     else:
-        return {
-            "status_code": str(res.status_code),
-            "detail": str(res.text)
-        }
+        data = {}
+        data['items'] = None
+        return render_template("view_bookings.html", data=data)
 
 
 @app.route('/view_maintenance_reqs', methods=['POST', "GET"])
@@ -1088,7 +1139,7 @@ def view_tenant_apps():
         "Content-Type": "application/json"
     }
     res = requests.get(f"{host}/v1/applications/", headers=headers)
-    if res.status_code == 200:
+    if res.status_code != 204:
         data = res.json()
         data['applications_length'] = len(data['items'])
         for app in data['items']:
@@ -1100,10 +1151,9 @@ def view_tenant_apps():
 
         return render_template("view_tenant_apps.html", data=data)
     else:
-        return {
-            "status_code": str(res.status_code),
-            "detail": str(res.text)
-        }
+        data = {}
+        data['items'] = None
+        return render_template("view_tenant_apps.html", data=data)
    
 
 @app.route('/payments', methods=['POST', "GET"])

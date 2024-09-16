@@ -473,16 +473,16 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#">About</a>
                     </li>
-                    <li class="nav-item">
+                    <!-- <li class="nav-item">
                         <a class="nav-link" href="#">Contact</a>
-                    </li>
+                    </li> -->
     
                     {% if logged_in %}
                     <li class="nav-item">
                         <a href="#"><img src="{{profile_picture}}" alt="Profile" class="profile-pic" data-bs-toggle="modal" data-bs-target="#userDetailsModal"></a>
                     </li>
                     <li class="nav-item">
-                        <button class="btn btn-logout">Logout</button>
+                        <a href="{{url_for('logout')}}" class="btn btn-logout">Logout</a>
                     </li> 
                     {% else %}
                     <li class="nav-item">
@@ -626,7 +626,7 @@
             </div>
             {% endfor %}
         {%  else %}
-        <p>No Listings Available</p>
+        <p class="text-center fw-bold">No Listings Available Yet</p>
         {% endif %}
            
     
@@ -727,6 +727,7 @@
 {% endif %}
     </div>
 
+    {% if data['items'] != None %}
     <div class="pagination_container">
         <nav aria-label="Page navigation">
             <ul class="pagination">
@@ -772,6 +773,7 @@
             </ul>
         </nav>
         </div>
+        {% endif %}
     
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>

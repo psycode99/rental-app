@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Response, status, HTTPException
-from sqlalchemy import update
+from sqlalchemy import update, desc
 from sqlalchemy.orm import Session
 from ..oauth import get_current_user
 from .. import schemas, models, database
@@ -47,7 +47,8 @@ def get_maintenance_reqs(property_id: int, db: Session = Depends(database.get_db
     if not property_check:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Property with id of {property_id} not found")
-    maintenance_reqs = db.query(models.MaintenanceRequest).filter_by(property_id=property_id).all()
+    maintenance_reqs = db.query(models.MaintenanceRequest).filter_by(property_id=property_id).order_by(desc(models.MaintenanceRequest.id)).all()
+
     if not maintenance_reqs:
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -93,9 +94,9 @@ def get_maintenance_reqs_user(db: Session = Depends(database.get_db), current_us
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="User not found")
     if current_user.landlord:
-        reqs = db.query(models.MaintenanceRequest).join(models.MaintenanceRequest.property).filter(models.Property.landlord_id == current_user.id)
+        reqs = db.query(models.MaintenanceRequest).join(models.MaintenanceRequest.property).filter(models.Property.landlord_id == current_user.id).order_by(desc(models.MaintenanceRequest.id))
     else:
-        reqs = db.query(models.MaintenanceRequest).filter_by(tenant_id=current_user.id)
+        reqs = db.query(models.MaintenanceRequest).filter_by(tenant_id=current_user.id).order_by(desc(models.MaintenanceRequest.id))
 
     if not reqs.first():
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT,

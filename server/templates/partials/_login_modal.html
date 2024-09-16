@@ -6,8 +6,8 @@
         </div>
         <div class="mb-3 position-relative">
             <label for="password" class="form-label">Password</label>
-            <input type="password" id="passwordl" name="password" class="form-control" required>
-            <i class="far fa-eye-slash toggle-passwordl" style="cursor: pointer; position: absolute; right: 10px; top: 36px;"></i>
+            <input type="password" id="password" name="password" class="form-control" required>
+            <i class="far fa-eye-slash toggle-password" style="cursor: pointer; position: absolute; right: 10px; top: 36px;"></i>
           </div>
         <button type="submit" class="btn btn-primary w-100">Login</button>
     </form>
@@ -16,3 +16,19 @@
         <p class="mb-0"><a href="{{url_for('forgot_password')}}">Forgot Password?</a></p>
     </div>
 </div>
+<script>
+    
+
+    document.querySelector('.toggle-password').addEventListener('click', function (e) {
+        const passwordInput = document.getElementById('password');
+        const icon = e.target;
+        // Toggle the type attribute of the password input
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        // Toggle the icon class
+        icon.classList.toggle('fa-eye-slash');
+        icon.classList.toggle('fa-eye');
+    });
+    
+</script>

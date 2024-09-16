@@ -1,6 +1,6 @@
 from typing import List, Optional
 from fastapi import APIRouter, status, Depends, HTTPException, Response
-from sqlalchemy import update
+from sqlalchemy import update, desc
 from ..database import get_db
 from ..oauth import get_current_user
 from .. import models, schemas
@@ -34,7 +34,7 @@ def create_property(property: schemas.PropertyCreate, db: Session = Depends(get_
 @router.get('/', status_code=status.HTTP_200_OK, response_model=Page[schemas.PropertyResp])
 def get_properties(db: Session = Depends(get_db)) -> Page[schemas.PropertyResp]:
     # Create the query object
-    properties_query = db.query(models.Property)
+    properties_query = db.query(models.Property).order_by(desc(models.Property.id))
 
     # Check if any properties exist
     if not properties_query.first():
@@ -47,9 +47,9 @@ def get_properties(db: Session = Depends(get_db)) -> Page[schemas.PropertyResp]:
 @router.get('/user', status_code=status.HTTP_200_OK, response_model=Page[schemas.PropertyResp])
 def get_properties(db: Session = Depends(get_db), current_user: int = Depends(get_current_user)) -> Page[schemas.PropertyResp]:
     if current_user.landlord:
-        properties = db.query(models.Property).filter_by(landlord_id=current_user.id)
+        properties = db.query(models.Property).filter_by(landlord_id=current_user.id).order_by(desc(models.Property.id))
     else:
-        properties = db.query(models.Property).join(models.Property.tenants).filter(models.Tenant.id == current_user.id)
+        properties = db.query(models.Property).join(models.Property.tenants).filter(models.Tenant.id == current_user.id).order_by(desc(models.Property.id))
       
     return paginate(properties)
 
@@ -69,17 +69,17 @@ def search(
 
     # Apply filters conditionally
     if state:
-        query = query.filter(models.Property.state.ilike(f"%{state}%"))
+        query = query.filter(models.Property.state.ilike(f"%{state}%")).order_by(desc(models.Property.id))
     if city:
-        query = query.filter(models.Property.city.ilike(f"%{city}%"))
+        query = query.filter(models.Property.city.ilike(f"%{city}%")).order_by(desc(models.Property.id))
     if status:
-        query = query.filter(models.Property.status == status)
+        query = query.filter(models.Property.status == status).order_by(desc(models.Property.id))
     if price is not None:
-        query = query.filter(models.Property.price <= price)
+        query = query.filter(models.Property.price <= price).order_by(desc(models.Property.id))
     if bedrooms is not None:
-        query = query.filter(models.Property.bedrooms >= bedrooms)
+        query = query.filter(models.Property.bedrooms >= bedrooms).order_by(desc(models.Property.id))
     if bathrooms is not None:
-        query = query.filter(models.Property.bathrooms >= bathrooms)
+        query = query.filter(models.Property.bathrooms >= bathrooms).order_by(desc(models.Property.id))
 
     # Check if the filtered query returns any results
     if query.count() == 0:

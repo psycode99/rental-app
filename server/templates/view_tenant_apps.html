@@ -380,6 +380,7 @@
     </div>
     
     <main class="container">
+        {% if data['items'] %}
         <section class="summary">
             <div class="summary-item" aria-label="Total Bookings">
                 <h3>{{data.applications_length}}</h3>
@@ -393,7 +394,7 @@
         </section>
 
         <section class="bookings">
-            {% if data.items %}
+            
                 {%  for app in data['items'] %}
                     <a href="{{ url_for('tenant_app', pid=app.property_id, tid=app.id)}}">
                     <article class="booking-card">
@@ -409,7 +410,7 @@
                     </a>
                 {% endfor %}
             {% else %}
-                <p>No Tenant Appplications Yet</p>
+                <p class="text-center fw-bold">No Tenant Appplications Yet</p>
             {% endif %}
 
         </section>

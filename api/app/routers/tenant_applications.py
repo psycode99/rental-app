@@ -1,5 +1,6 @@
 from typing import List
 from fastapi import APIRouter,  HTTPException, Depends, Response, status
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 from ..oauth import get_current_user
 from .. import schemas, models, database
@@ -37,7 +38,7 @@ def get_applications(property_id: int, db:  Session = Depends(database.get_db), 
     if not property_check:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Property with id of {property_id} not found")
-    applications = db.query(models.TenantApplication).filter_by(property_id=property_id).all()
+    applications = db.query(models.TenantApplication).filter_by(property_id=property_id).order_by(desc(models.TenantApplication.id)).all()
     if not applications:
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
     return applications
@@ -50,9 +51,9 @@ def get_applications_user(db:  Session = Depends(database.get_db), current_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="User not found")
     if current_user.landlord:
-        applications = db.query(models.TenantApplication).join(models.TenantApplication.property).filter(models.Property.landlord_id == current_user.id)
+        applications = db.query(models.TenantApplication).join(models.TenantApplication.property).filter(models.Property.landlord_id == current_user.id).order_by(desc(models.TenantApplication.id))
     else:
-        applications = db.query(models.TenantApplication).filter_by(tenant_id=current_user.id)
+        applications = db.query(models.TenantApplication).filter_by(tenant_id=current_user.id).order_by(desc(models.TenantApplication.id))
 
     if not applications.first():
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT,

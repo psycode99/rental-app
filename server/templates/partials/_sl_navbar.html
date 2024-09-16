@@ -9,15 +9,23 @@
                 <li class="nav-item">
                     <a class="nav-link text-white" href="{{url_for('home')}}">Home</a>
                 </li>
+                {%  if '/about' not in request.path %}
                 <li class="nav-item">
                     <a class="nav-link text-white" href="{{url_for('about')}}">About</a>
                 </li>
-                <li class="nav-item">
+                {% endif %}
+                <!-- <li class="nav-item">
                     <a class="nav-link text-white" href="#">Contact</a>
-                </li>
+                </li> -->
+                {% if  '/login' in request.path %}
                 <li class="nav-item ms-2">
+                    <a href="{{url_for('signup')}}" class="btn btn-signup">Signup</a>
+                </li>
+                {%  elif '/signup' in request.path %}
+                <li class="nav-item ms-2"></li>
                     <a href="{{url_for('login')}}" class="btn btn-login">Login</a>
                 </li>
+                {% endif %}
             </ul>
         </div>
     </div>

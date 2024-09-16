@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 from ..oauth import get_current_user
 from .. import database, models, schemas
@@ -49,7 +50,8 @@ def get_bookings(property_id: int, db: Session = Depends(database.get_db), curre
     #                         detail="You are not authorized")
     
 
-    bookings = db.query(models.Booking).filter_by(property_id=property.id).all()
+    bookings = db.query(models.Booking).filter_by(property_id=property.id).order_by(desc(models.Booking.id)).all()
+
     if not bookings:
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT,
                             detail="No available bookings")
@@ -65,9 +67,10 @@ def get_bookings_user(db: Session = Depends(database.get_db), current_user: int 
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="User not found")
     if current_user.landlord:
-        bookings = db.query(models.Booking).join(models.Booking.property).filter(models.Property.landlord_id == current_user.id)
+        bookings = db.query(models.Booking).join(models.Booking.property).filter(models.Property.landlord_id == current_user.id).order_by(desc(models.Booking.id))
+
     else:
-        bookings = db.query(models.Booking).filter_by(email=current_user.email)
+        bookings = db.query(models.Booking).filter_by(email=current_user.email).order_by(desc(models.Booking.id))
 
     if not bookings.first():
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT,
