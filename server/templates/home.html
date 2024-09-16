@@ -9,6 +9,8 @@
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="/static/images/favicon.ico" type="image/x-icon">
+    <!-- <link rel="icon" href="/static/images"/ type="image/png"> -->
     
     <style>
         body, .navbar-brand, .nav-link, .btn-logout, .hero, .search-bar, .card, .property-details, .property-features .feature, .bottom-nav .nav-link {
@@ -481,9 +483,19 @@
                         <a class="nav-link" href="#">Contact</a>
                     </li> -->
                     {%  if logged_in %}
-                    <li class="nav-item">
-                        <a href="#"><img src="{{data['img_path']}}{{data['profile_pic']}}" alt="Profile" class="profile-pic" data-bs-toggle="modal" data-bs-target="#userDetailsModal"></a>
-                    </li>
+                        {% if data['profile_pic'] == "null" %}
+                        <li class="nav-item">
+                            <a href="#">
+                                <!-- Use Gravatar image instead of static image -->
+                                <img src="{{ data['email'] | gravatar }}" alt="Profile" class="profile-pic" data-bs-toggle="modal" data-bs-target="#userDetailsModal">
+                            </a>
+                        </li>
+                        
+                        {% else %}
+                            <li class="nav-item">
+                                <a href="#"><img src="{{data['img_path']}}{{data['profile_pic']}}" alt="Profile" class="profile-pic" data-bs-toggle="modal" data-bs-target="#userDetailsModal"></a>
+                            </li>
+                        {% endif %}
                     <li class="nav-item">
                         <a href="{{url_for('logout')}}" class="btn btn-logout">Logout</a>
                     </li> 
@@ -667,7 +679,12 @@
                             <div class="profile-pic-container">
                                 <input type="file" id="profilePicInput" name="profile_pic" class="profile-pic-input" accept="image/*">
                                 <label for="profilePicInput" class="profile-pic-label">
+                                    {% if data.profile_pic == "null" %}
+                                    <img id="profilePic" src="{{ data.email | gravatar }}" alt="Profile Picture" class="profile-pic2">
+                                    {% else %}
+    
                                     <img id="profilePic" src="{{data['img_path']}}{{data['profile_pic']}}" alt="Profile Picture" class="profile-pic2">
+                                    {% endif %}
                                     <div class="profile-pic-overlay">
                                         <i class="fas fa-camera"></i>
                                         <span>Change</span>

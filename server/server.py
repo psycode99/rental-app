@@ -1,4 +1,5 @@
 from flask import *
+from flask_gravatar import Gravatar
 import requests
 import jwt
 from functools import wraps
@@ -9,6 +10,15 @@ from config import host, profile_pic_dir, property_uploads_dir, tenant_applicati
 
 app = Flask(__name__)
 app.secret_key = flask_secret_key
+
+gravatar = Gravatar(app,
+                    size=100,
+                    rating='g',
+                    default='retro',
+                    force_default=False,
+                    force_lower=False,
+                    use_ssl=False,
+                    base_url=None)
 
 
 def humanize_res(data):
