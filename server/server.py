@@ -1041,19 +1041,23 @@ def user_property():
             data['user_data'] = user_data
             data['landlord_data'] = landlord_data
             data['img_path'] = profile_pic_dir
-            return render_template("user_property.html", data=data, logged_in=True)
-        else:
-            return {
-            "status_code": str(landlord_res.status_code),
-            "detail": str( landlord_res.text)
-        }
 
+            tenants_res = requests.get(f"{host}/v1/users/{property_id}")
+            if tenants_res.status_code !=  204:
+                tenants_data = tenants_res.json()
+                data['tenants'] = tenants_data
+                return render_template("user_property.html", data=data, logged_in=True)
+            else:
+                tenants_data = None
+                data['tenants'] = tenants_data
+                return render_template("user_property.html", data=data, logged_in=True)
+        else:
+            flash("An Error Occurred", "error")
+            return redirect(url_for('dashboard'))
 
     else:
-        return {
-            "status_code": str(res.status_code),
-            "detail": str( res.text)
-        }
+            flash("An Error Occurred", "error")
+            return redirect(url_for('dashboard'))
 
    
 @app.route('/view_bookings', methods=['POST', "GET"])
@@ -1579,13 +1583,49 @@ def password_reset():
 @app.route('/delete_property')
 @token_required
 def delete_property():
-    pass
+    access_token = request.cookies.get('access_token')
+    property_id = request.args.get('id')
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+
+    res = requests.delete(f"{host}/v1/properties/{property_id}", headers=headers)
+    if res.status_code == 204:
+        flash("Successfully Deleted Property", "success")
+        return redirect(url_for('dashboard'))
+    else:
+        flash("Failed to Delete Property", "error")
+        return redirect(url_for('dashbaord'))
 
 
 @app.route('/delete_user')
 @token_required
 def delete_user():
-    pass
+    access_token = request.cookies.get('access_token')
+    user_id = request.args.get('id')
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+
+    delete_phrase = request.form.get('deletePhrase').title()
+    phrase = "Delete My Account"
+    if delete_phrase == phrase:
+        res = requests.delete(f"{host}/v1/users/{user_id}", headers=headers)
+        if res.status_code == 204:
+            session.clear()
+            resp = make_response(redirect('/'))
+            resp.set_cookie('access_token', '', expires=0)  # Clear the JWT token from cookies
+            flash("Account Successfully Deleted", "success")
+            return resp
+            
+        else:
+            flash("Account Deletion Failed", "error")
+            return redirect(url_for('home'))
+    else:
+        flash('Wrong Phrase', "error")
+        return redirect(url_for('edit_user_info'))
 
 
 @app.route('/logout')

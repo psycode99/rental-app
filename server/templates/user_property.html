@@ -422,7 +422,7 @@
                 </div>
                 {%  if data.user_data.id == data.landlord_data.landlord_id and data.user_data.landlord %}
                 <a href="{{ url_for('edit_property_img', id=data.id) }}" class="btn btn-primary w-100 ">Edit Property</a>
-                <a href="your-link-here" class="btn btn-danger my-1 w-100 ">Delete Property</a>
+                <a href="{{ url_for('delete_property', id=data.id) }}" class="btn btn-danger my-1 w-100 ">Delete Property</a>
                 {% else %}
                 <a href="{{url_for('view_maintenance_reqs')}}" class="btn btn-primary w-100 ">Maintenance Request</a>
                 
@@ -460,19 +460,23 @@
                 <div class="card-body">
                     <h5 class="card-title">Tenants</h5>
                     <div class="tenant-list">
-                        <!-- Tenant 1 -->
-                        <div class="tenant-item">
-                            <img src="https://via.placeholder.com/50" class="rounded-circle" alt="Tenant Image" width="50" height="50">
-                            <span class="tenant-name">{{tenant1_name}}</span>
-                            <button class="btn btn-evict">Evict</button>
-                        </div>
-                        <!-- Tenant 2 -->
-                        <div class="tenant-item">
-                            <img src="https://via.placeholder.com/50" class="rounded-circle" alt="Tenant Image" width="50" height="50">
-                            <span class="tenant-name">{{tenant2_name}}</span>
-                            <button class="btn btn-evict">Evict</button>
-                        </div>
-                        <!-- Repeat tenant items as necessary -->
+                        {% if data.tenants %}
+                            {% for tenant in data.tenants %}
+                                <!-- Tenant 1 -->
+                                <div class="tenant-item">
+                                    {% if tenant.profile_pic == "null" %}
+                                    <img src="{{tenant.email | gravatar }}" class="rounded-circle" alt="Tenant Image" width="50" height="50">
+                                    {% else %}
+                                    <img src="{{data['img_path']}}{{tenant.profile_pic}}" class="rounded-circle" alt="Tenant Image" width="50" height="50">
+                                    {% endif %}
+                                    <span class="tenant-name">{{tenant.first_name}} {{tenant.last_name}}</span>
+                                    <button class="btn btn-evict">Evict</button>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                                <p>No Tenants for this Property</p>
+                        {% endif %}
+                      
                     </div>
                 </div>
             </div>

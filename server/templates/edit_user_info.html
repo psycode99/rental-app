@@ -247,17 +247,18 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <p>This action is permanent. Please enter your password to confirm:</p>
-                        <form id="deleteForm">
+                        <p>This action is permanent. Please enter the word <strong>Delete My Account</strong> to confirm:</p>
+                        <form id="deleteForm" action="{{url_for('delete_user', id=data['id'])}}">
                             <div class="mb-3">
-                                <input type="password" id="deletePassword" name="deletePassword" class="form-control" required>
+                                <input type="password" id="deletePassword" name="deletePhrase" class="form-control" required>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" form="deleteForm" class="btn btn-danger">Delete Account</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                             </div>
                         </form>
                     </div>
-                    <div class="modal-footer">
-                        <button type="submit" form="deleteForm" class="btn btn-danger">Delete Account</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    </div>
+                   
                 </div>
             </div>
         </div>
