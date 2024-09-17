@@ -1512,6 +1512,27 @@ def approve_tenant_app():
         }
 
 
+@app.route('/evict_tenant')
+@token_required
+def evict_tenant():
+    property_id = request.args.get('pid')
+    tenant_id = request.args.get('tid')
+    access_token = request.cookies.get('access_token')
+    
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+
+    res = requests.delete(f"{host}/v1/users/{property_id}/{tenant_id}", headers=headers)
+    if res.status_code == 204:
+        flash("Tenant Evicted", "success")
+        return redirect(url_for('user_property', id=property_id))
+    else:
+        flash("An error occurred", "error")
+        return redirect(url_for('user_property', id=property_id))
+
 @app.route('/forgot_password', methods=['POST', "GET"])
 def forgot_password():
     if request.method == "POST":

@@ -342,6 +342,15 @@
         .btn-evict:hover {
             background-color: darkred;
         }
+        .alert {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
         @media (max-width: 768px) {
             
             .btn-logout, .btn-signup {
@@ -387,6 +396,18 @@
 
     <!-- Property Details -->
     <div class="container mt-5">
+    {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+            <div class="flash-messages-container">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'info' }} alert-dismissible fade show" role="alert">
+                        <strong>{{ message }}</strong>
+                        
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
         <div class="row">
             <div class="col-md-8">
                 <h2 class="property-title">{{data.address}}, {{data.city}}, {{data.state}} </h2>
@@ -470,7 +491,7 @@
                                     <img src="{{data['img_path']}}{{tenant.profile_pic}}" class="rounded-circle" alt="Tenant Image" width="50" height="50">
                                     {% endif %}
                                     <span class="tenant-name">{{tenant.first_name}} {{tenant.last_name}}</span>
-                                    <button class="btn btn-evict">Evict</button>
+                                    <a  href="{{url_for('evict_tenant', pid=data.id, tid=tenant.id)}}" class="btn btn-evict">Evict</a>
                                 </div>
                             {% endfor %}
                         {% else %}
