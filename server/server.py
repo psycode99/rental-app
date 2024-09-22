@@ -989,15 +989,26 @@ def view_properties():
     headers = {'Authorization': f'Bearer {token}',
                 "Content-Type": "application/json"
                         }
-    
-    res = requests.get(f"{host}/v1/properties/user", headers=headers)
+    page = request.args.get('page')
+    if page == None:
+        page = 1
+    res = requests.get(f"{host}/v1/properties/user?page={page}&size=6", headers=headers)
     
     if res.status_code == 200:
         data = res.json()
         if data['items']:
             data = humanize_res(data)
         data['property_imgs'] = property_uploads_dir
-        return render_template("view_prop.html", data=data)
+        total = data['total']
+        current_page = data['page']
+        size = data['size']
+        total_pages = data['pages']
+        return render_template("view_prop.html",
+                                data=data,
+                                total=total,
+                                page=current_page,
+                                size=size,
+                                total_pages=total_pages)
     else:
         return {
             "status_code": str(res.status_code),
@@ -1068,7 +1079,10 @@ def view_bookings():
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json"
     }
-    res = requests.get(f"{host}/v1/bookings/", headers=headers)
+    page = request.args.get('page')
+    if page == None:
+        page = 1
+    res = requests.get(f"{host}/v1/bookings?page={page}&size=10", headers=headers)
     if res.status_code != 204:
         data = res.json()
         data['bookings_length'] = len(data['items'])
@@ -1078,8 +1092,17 @@ def view_bookings():
                 booking['property_address'] = prop_res.json().get('address')
                 booking['state'] = prop_res.json().get('state')
                 booking['city'] = prop_res.json().get('city')
+                total = data['total']
+                current_page = data['page']
+                size = data['size']
+                total_pages = data['pages']
 
-        return render_template("view_bookings.html", data=data)
+        return render_template("view_bookings.html",
+                                data=data,
+                                total=total,
+                                page=current_page,
+                                size=size,
+                                total_pages=total_pages)
     else:
         data = {}
         data['items'] = None
@@ -1091,6 +1114,9 @@ def view_bookings():
 def view_maintenance_reqs():
     access_token = request.cookies.get('access_token')
     verify_AT = verify_token(access_token)
+    page = request.args.get('page')
+    if page == None:
+        page = 1
     landlord = None
     if verify_AT['landlord']:
         landlord = True
@@ -1113,9 +1139,13 @@ def view_maintenance_reqs():
                     "status_code": prop_res.status_code,
                     "detail": prop_res.text
                 }
-    res = requests.get(f"{host}/v1/maintenance_reqs/", headers=headers)
+    res = requests.get(f"{host}/v1/maintenance_reqs?page={page}&size=10", headers=headers)
     if res.status_code == 200:
         data = res.json()
+        total = data['total']
+        current_page = data['page']
+        size = data['size']
+        total_pages = data['pages']
         for mr in data['items']:
             property_resp = requests.get(f"{host}/v1/properties/{mr['property_id']}")
             if property_resp.status_code == 200:
@@ -1138,10 +1168,19 @@ def view_maintenance_reqs():
                 }
     elif res.status_code == 204:
         data = {"message":"No Maintenance Request Made Yet", "items": []}
+        total = 0
+        current_page = 0
+        size = 0
+        total_pages = 0
 
     data['property_data'] = prop_details
     data['landlord'] = landlord
-    return render_template("view_maintenance_reqs.html", data=data)
+    return render_template("view_maintenance_reqs.html",
+                            data=data,
+                            total=total,
+                            page=current_page,
+                            size=size,
+                            total_pages=total_pages)
 
 
 @app.route('/view_tenant_apps', methods=['POST', "GET"])
@@ -1152,9 +1191,16 @@ def view_tenant_apps():
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json"
     }
-    res = requests.get(f"{host}/v1/applications/", headers=headers)
+    page = request.args.get('page')
+    if page == None:
+        page = 1
+    res = requests.get(f"{host}/v1/applications?page={page}&size=10", headers=headers)
     if res.status_code != 204:
         data = res.json()
+        total = data['total']
+        current_page = data['page']
+        size = data['size']
+        total_pages = data['pages']
         data['applications_length'] = len(data['items'])
         for app in data['items']:
             prop_res = requests.get(f"{host}/v1/properties/{app['property_id']}")
@@ -1163,7 +1209,12 @@ def view_tenant_apps():
                 app['state'] = prop_res.json().get('state')
                 app['city'] = prop_res.json().get('city')
 
-        return render_template("view_tenant_apps.html", data=data)
+        return render_template("view_tenant_apps.html",
+                                data=data,
+                                total=total,
+                                page=current_page,
+                                size=size,
+                                total_pages=total_pages)
     else:
         data = {}
         data['items'] = None
@@ -1532,6 +1583,7 @@ def evict_tenant():
     else:
         flash("An error occurred", "error")
         return redirect(url_for('user_property', id=property_id))
+
 
 @app.route('/forgot_password', methods=['POST', "GET"])
 def forgot_password():

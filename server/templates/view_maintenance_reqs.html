@@ -373,6 +373,27 @@
             a{
                 text-decoration: none;
             }
+
+            .pagination-container {
+                display: flex;
+                justify-content: center;
+                margin-top: 20px;
+            }
+    
+            .pagination {
+                justify-content: center;
+            }
+    
+            .pagination .page-item.active .page-link {
+                background-color: #33ccff;
+                border-color: #33ccff;
+                color: #fff; /* Optional: Adjust text color for contrast */
+            }
+    
+            .pagination .page-item .page-link {
+                border-radius: 1px; 
+                color:#33ccff;
+            }
             
             @media (max-width: 767px) {
                 .dashboard-header h1 {
@@ -399,6 +420,7 @@
                     text-align: left;
                     margin-top: 10px;
                 }
+
             }    
     </style>
 </head>
@@ -454,7 +476,7 @@
                     </a>
                 {% endfor %}
             {% else %}
-            <p>No Maintenance Requests have been made yet</p>
+            <p class="text-center fw-bold">No Maintenance Requests have been made yet</p>
             {% endif %}
 
             
@@ -497,6 +519,54 @@
                 </div>
             </div>
         </div>
+
+    {% if data['items']  %}
+    <div class="pagination_container">
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% if page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page - 1 }}&size={{ size }}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% for p in range(1, total_pages + 1) %}
+                    {% if p == page %}
+                        <li class="page-item active">
+                            <a class="page-link">{{ p }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ p }}&size={{ size }}">{{ p }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page < total_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page + 1 }}&size={{ size }}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        </div>
+{% endif %}
     </main>
 
     {% include "./partials/_footer.html" %}

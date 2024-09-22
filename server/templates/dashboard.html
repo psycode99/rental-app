@@ -393,6 +393,16 @@
             .change-btn:hover {
                 background-color: #2cb5e8;
             }
+            
+            .alert {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px 20px;
+                margin-top: 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
             @media (max-width: 767px) {
                 .dashboard-header h1 {
                     font-size: 1.5rem;
@@ -464,6 +474,18 @@
     
 
     <div class="dashboard-content container">
+        {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+            <div class="flash-messages-container">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'info' }} alert-dismissible fade show" role="alert">
+                        <strong>{{ message }}</strong>
+                        
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
         <div class="row g-4">
             {% if data.landlord %}
             <div class="col-6 col-md-6">
